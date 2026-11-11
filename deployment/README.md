@@ -71,7 +71,7 @@ Enable the HTTPS site from the repository root:
 
 Start Spring Boot with HTTPS proxy awareness and secure session cookies:
     cd nas-backend
-    SERVER_FORWARD_HEADERS_STRATEGY=native SERVER_SERVLET_SESSION_COOKIE_SECURE=true bash ./mvnw spring-boot:run
+    SERVER_FORWARD_HEADERS_STRATEGY=framework SERVER_SERVLET_SESSION_COOKIE_SECURE=true bash ./mvnw spring-boot:run
 
 These environment settings apply only to this run.
 Use HTTPS when running with secure session cookies.
