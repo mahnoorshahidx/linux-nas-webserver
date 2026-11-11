@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Monitoring | NAS Server</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/monitoring.css">
+    <script src="/js/monitoring.js" defer></script>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">✦</div>
+            <div>
+                <h2>NAS Server</h2>
+                <span>Cloud Storage</span>
+            </div>
+        </div>
+
+        <p class="nav-label">WORKSPACE</p>
+        <nav>
+            <a href="/dashboard.html">Dashboard</a>
+            <a href="/monitoring.html" class="active">System Monitoring</a>
+            <a href="/files.html">My Files</a>
+            <a href="/folders.html">Folders</a>
+            <a href="/backups.html">Backup &amp; Restore</a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <p>System Monitoring</p>
+            <span>Review Ubuntu system events</span>
+        </div>
+    </aside>
+
+    <main class="content">
+        <header class="page-header">
+            <div>
+                <p class="eyebrow">SERVER ACTIVITY</p>
+                <h1>System Monitoring</h1>
+                <p>Recent service, operating system, and firewall events.</p>
+            </div>
+            <button type="button" class="secondary-btn"
+                    id="refreshLogsButton">↻ Refresh</button>
+        </header>
+
+        <section class="card">
+            <div class="section-heading">
+                <h2>System Journal</h2>
+                <p>Latest 50 entries, with the newest at the bottom.
+                   Output is limited to 64 KiB.</p>
+            </div>
+
+            <p id="logsStatus" role="status" aria-live="polite">
+                Loading system logs...
+            </p>
+
+            <pre id="logOutput" tabindex="0"
+                 aria-label="Recent system journal entries">Waiting for data...</pre>
+        </section>
+
+        <section class="card">
+            <div class="section-heading">
+                <h2>Understanding the Entries</h2>
+            </div>
+            <p>Each entry includes a timestamp, hostname, source, and message.</p>
+            <p>systemd entries describe service activity.
+               UFW BLOCK entries record packets blocked by the firewall;
+               they do not by themselves prove an attack.</p>
+            <p><a href="/dashboard.html">View CPU, memory, and disk usage</a></p>
+        </section>
+    </main>
+</div>
+</body>
+</html>
