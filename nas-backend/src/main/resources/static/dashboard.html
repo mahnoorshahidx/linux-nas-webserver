@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | NAS Server</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <script src="/js/dashboard.js" defer></script>
+</head>
+<body>
+<div class="layout">
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">✦</div>
+            <div>
+                <h2>NAS Server</h2>
+                <span>Cloud Storage</span>
+            </div>
+        </div>
+
+        <p class="nav-label">WORKSPACE</p>
+        <nav>
+            <a href="/dashboard.html" class="active">Dashboard</a>
+            <a href="/files.html">My Files</a>
+            <a href="/folders.html">Folders</a>
+            <a href="/backups.html">Backup &amp; Restore</a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <p>Server Overview</p>
+            <span>Monitor your Ubuntu server</span>
+        </div>
+    </aside>
+
+    <main class="content">
+        <header class="page-header">
+            <div>
+                <p class="eyebrow">SERVER OVERVIEW</p>
+                <h1>Dashboard</h1>
+                <p>Resource usage inside the Ubuntu virtual machine.</p>
+            </div>
+            <button type="button" class="secondary-btn"
+                    id="refreshButton">↻ Refresh</button>
+        </header>
+
+        <p id="dashboardStatus" role="status" aria-live="polite">
+            Loading measurements...
+        </p>
+
+        <div class="metrics-grid">
+            <section class="card">
+                <div class="section-heading">
+                    <h2>CPU Usage</h2>
+                    <p>Recent processor utilization</p>
+                </div>
+                <p class="metric-value" id="cpuValue">—</p>
+                <p id="cpuDetails">Waiting for data</p>
+            </section>
+
+            <section class="card">
+                <div class="section-heading">
+                    <h2>Memory Usage</h2>
+                    <p>Used memory, including operating system caches</p>
+                </div>
+                <p class="metric-value" id="memoryValue">—</p>
+                <p id="memoryDetails">Waiting for data</p>
+            </section>
+
+            <section class="card">
+                <div class="section-heading">
+                    <h2>Disk Usage</h2>
+                    <p>Filesystem containing uploaded files</p>
+                </div>
+                <p class="metric-value" id="diskValue">—</p>
+                <p id="diskDetails">Waiting for data</p>
+            </section>
+
+            <section class="card">
+                <div class="section-heading">
+                    <h2>Application Uptime</h2>
+                    <p>Time since Spring Boot started</p>
+                </div>
+                <p class="metric-value" id="uptimeValue">—</p>
+                <p>Resets when the application restarts.</p>
+            </section>
+        </div>
+
+        <section class="card">
+            <div class="section-heading">
+                <h2>Your Workspace</h2>
+                <p>Open the team's file and backup tools.</p>
+            </div>
+            <div class="dashboard-links">
+                <a href="/files.html">My Files</a>
+                <a href="/folders.html">Folders</a>
+                <a href="/backups.html">Backup &amp; Restore</a>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>
