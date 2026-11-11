@@ -88,6 +88,24 @@ An unauthenticated request can return 401. The session cookie should
 include Secure and HttpOnly.
 
 Private keys and generated backups must not be committed.
-Windows HTTPS forwarding has not been configured yet.
+Windows HTTPS forwarding:
+    Add a second VirtualBox NAT forwarding rule:
+    Name: NAS-HTTPS
+    Protocol: TCP
+    Host IP: 127.0.0.1
+    Host port: 8443
+    Guest IP: blank
+    Guest port: 443
+
+Allow HTTPS through the Ubuntu firewall:
+    sudo ufw allow 443/tcp
+
+Windows browser addresses:
+    https://127.0.0.1:8443/dashboard.html
+    https://127.0.0.1:8443/monitoring.html
+
+The dashboard has been verified from Windows over HTTPS.
+These loopback forwarding rules provide access from the Windows
+host only; they do not provide public internet access.
 Public access and integration with the team's final authentication
 and permissions remain pending.
