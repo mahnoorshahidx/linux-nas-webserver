@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Account | NAS Server</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="/js/register.js" defer></script>
+</head>
+<body class="auth-page">
+    <main class="auth-card">
+        <div class="brand auth-brand">
+            <div class="brand-icon">✦</div>
+            <div>
+                <h2>NAS Server</h2>
+                <span>Cloud Storage</span>
+            </div>
+        </div>
+        <p class="eyebrow">GET STARTED</p>
+        <h1>Create your account</h1>
+        <p class="auth-description">Sign up to start managing your personal files.</p>
+
+        <form id="registerForm" class="auth-form">
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text" minlength="3" maxlength="50" autocomplete="username" required>
+
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" maxlength="100" autocomplete="email" required>
+
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" minlength="8" maxlength="72" autocomplete="new-password" required>
+
+            <label for="confirmPassword">Confirm password</label>
+            <input id="confirmPassword" name="confirmPassword" type="password" minlength="8" maxlength="72" autocomplete="new-password" required>
+
+            <p id="registerMessage" class="auth-message" role="status" aria-live="polite"></p>
+            <button type="submit" class="primary-btn auth-button" id="registerButton">Create Account</button>
+        </form>
+        <p class="auth-footer">Already have an account? <a href="/login">Log in</a></p>
+        <p class="auth-footer"><a href="/">Back to home</a></p>
+    </main>
+</body>
+</html>
