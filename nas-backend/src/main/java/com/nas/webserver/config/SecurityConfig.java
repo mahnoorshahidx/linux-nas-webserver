@@ -38,6 +38,10 @@ public class SecurityConfig {
                 .requestMatchers("/", "/index.html", "/register.html", "/login", "/login.html", "/error",
                         "/api/csrf", "/css/**", "/js/**").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/users/register").permitAll()
+                .requestMatchers("/api/backups", "/api/backups/**",
+                        "/backups.html").hasRole("ADMIN")
+                .requestMatchers("/api/file-metadata",
+                        "/api/file-metadata/**").hasRole("ADMIN")
                 .requestMatchers("/api/users/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )

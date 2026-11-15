@@ -19,9 +19,17 @@ class FolderServiceTest {
 
     private FolderService folderService;
 
+    private com.nas.webserver.service.UserStorageService testStorage()
+            throws java.io.IOException {
+        var storage = org.mockito.Mockito.mock(
+                com.nas.webserver.service.UserStorageService.class);
+        org.mockito.Mockito.when(storage.root()).thenReturn(tempDir);
+        return storage;
+    }
+
     @BeforeEach
     void setUp() throws IOException {
-        folderService = new FolderService(tempDir.toString());
+        folderService = new FolderService(testStorage());
     }
 
     // Test creating a folder

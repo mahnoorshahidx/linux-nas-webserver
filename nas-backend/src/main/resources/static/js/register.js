@@ -41,7 +41,7 @@ registerForm.addEventListener('submit', async (event) => {
         if (response.status === 201) {
             showMessage('Account created successfully. Redirecting to login...', false);
             registerForm.reset();
-            setTimeout(() => window.location.href = '/login', 1200);
+            setTimeout(() => window.location.href = '/login.html', 1200);
             return;
         }
 

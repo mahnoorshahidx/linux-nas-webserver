@@ -23,10 +23,18 @@ class FolderControllerTest {
 
     private MockMvc mockMvc;
 
+    private com.nas.webserver.service.UserStorageService testStorage()
+            throws java.io.IOException {
+        var storage = org.mockito.Mockito.mock(
+                com.nas.webserver.service.UserStorageService.class);
+        org.mockito.Mockito.when(storage.root()).thenReturn(tempDir);
+        return storage;
+    }
+
     @BeforeEach
     void setUp() throws Exception {
         FolderService folderService =
-                new FolderService(tempDir.toString());
+                new FolderService(testStorage());
 
         mockMvc = MockMvcBuilders.standaloneSetup(
                 new FolderController(folderService)).build();

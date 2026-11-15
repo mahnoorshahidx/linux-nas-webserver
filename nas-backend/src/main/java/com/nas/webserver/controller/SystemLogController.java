@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Map;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +22,7 @@ public class SystemLogController {
     }
 
     // Get the latest system journal entries
+    @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/logs")
     public ResponseEntity<Map<String, String>> getLogs() throws IOException {
         String logs = systemLogService.getRecentLogs();

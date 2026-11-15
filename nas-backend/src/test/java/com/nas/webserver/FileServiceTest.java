@@ -20,9 +20,17 @@ class FileServiceTest {
 
     private FileService fileService;
 
+    private com.nas.webserver.service.UserStorageService testStorage()
+            throws java.io.IOException {
+        var storage = org.mockito.Mockito.mock(
+                com.nas.webserver.service.UserStorageService.class);
+        org.mockito.Mockito.when(storage.root()).thenReturn(tempDir);
+        return storage;
+    }
+
     @BeforeEach
     void setUp() throws IOException {
-        fileService = new FileService(tempDir.toString());
+        fileService = new FileService(testStorage());
     }
 
     // Test uploading a file

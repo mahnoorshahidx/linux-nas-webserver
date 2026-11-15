@@ -26,9 +26,17 @@ class FileControllerTest {
 
     private MockMvc mockMvc;
 
+    private com.nas.webserver.service.UserStorageService testStorage()
+            throws java.io.IOException {
+        var storage = org.mockito.Mockito.mock(
+                com.nas.webserver.service.UserStorageService.class);
+        org.mockito.Mockito.when(storage.root()).thenReturn(tempDir);
+        return storage;
+    }
+
     @BeforeEach
     void setUp() throws Exception {
-        FileService fileService = new FileService(tempDir.toString());
+        FileService fileService = new FileService(testStorage());
 
         mockMvc = MockMvcBuilders.standaloneSetup(
                 new FileController(fileService)).build();

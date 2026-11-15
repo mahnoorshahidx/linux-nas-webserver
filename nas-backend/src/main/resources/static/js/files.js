@@ -1,3 +1,21 @@
+async function fetchWithCsrf(url, options = {}) {
+    const method = (options.method || "GET").toUpperCase();
+
+    if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
+        const response = await fetch("/api/csrf", { cache: "no-store" });
+        if (!response.ok) {
+            throw new Error("Please sign in again and retry.");
+        }
+
+        const csrf = await response.json();
+        const headers = new Headers(options.headers);
+        headers.set(csrf.headerName, csrf.token);
+        options = { ...options, headers };
+    }
+
+    return fetch(url, options);
+}
+
 const fileList = document.getElementById("fileList");
 const uploadForm = document.getElementById("uploadForm");
 const fileInput = document.getElementById("fileInput");
@@ -70,7 +88,7 @@ uploadForm.addEventListener("submit", async event => {
     data.append("file", chosenFile);
 
     try {
-        const response = await fetch("/api/files/upload", {
+        const response = await fetchWithCsrf("/api/files/upload", {
             method: "POST",
             body: data
         });
@@ -95,7 +113,7 @@ async function loadFiles() {
     fileList.replaceChildren();
 
     try {
-        const response = await fetch("/api/files");
+        const response = await fetchWithCsrf("/api/files");
 
         if (!response.ok) {
             throw new Error("Unable to load files.");
@@ -187,7 +205,7 @@ document.getElementById("confirmDelete")
         const filename = pendingDelete;
 
         try {
-            const response = await fetch(
+            const response = await fetchWithCsrf(
                 "/api/files/" + encodeURIComponent(filename),
                 { method: "DELETE" }
             );
