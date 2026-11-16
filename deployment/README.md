@@ -1,3 +1,60 @@
+## Current tested deployment
+
+The laptop runs the Ubuntu VM, Apache, Spring Boot, MySQL, and storage.
+Public access uses Cloudflare Tunnel.
+
+### Start in Ubuntu
+
+    sudo systemctl start mysql apache2
+    cd ~/projects/linux-nas-webserver/nas-backend
+    source ~/.config/linux-nas/runtime.env
+    SERVER_FORWARD_HEADERS_STRATEGY=framework SERVER_SERVLET_SESSION_COOKIE_SECURE=true bash ./mvnw spring-boot:run
+
+runtime.env contains private, machine-specific settings outside Git.
+Other machines need their own database credentials and configuration.
+Login uses accounts stored in MySQL.
+
+### Public access from Windows PowerShell
+
+    cloudflared tunnel --url https://127.0.0.1:8443 --no-tls-verify
+
+The verification exception accommodates the local self-signed certificate.
+Use the public HTTPS URL printed by cloudflared.
+The URL is temporary and changes when the tunnel is recreated.
+Keep the laptop awake, VM running, application running, and tunnel open.
+
+VirtualBox NAT forwarding:
+- Windows loopback 8081 to Ubuntu 80.
+- Windows loopback 8443 to Ubuntu 443.
+- Apache proxies to Spring Boot on 8080.
+
+### Monitoring and verification
+
+Admins see Dashboard and System Monitoring links in the sidebar.
+The pages are /dashboard.html and /monitoring.html.
+Regular users do not see these links; monitoring access is forbidden.
+
+Public login, download, dashboard measurements, and journal logs were
+demonstrated over phone cellular data.
+53 selected service/controller tests passed before the navigation fix.
+The navigation fix compiled and passed manual local and public checks.
+Final team integration and remaining application requirements are separate.
+
+### Configuration backup handoff
+
+Preserve Apache site/proxy and HTTPS settings, enabled module/site
+selections, UFW rules, and application runtime settings.
+Apache templates are in deployment/apache.
+Local HTTPS certificate/key files are under /etc/apache2/ssl.
+Credentials and private keys need protected backups outside Git.
+Document VirtualBox forwarding separately on Windows.
+Mahnoor handles configuration backup/restore implementation.
+
+The older setup instructions below are retained for reference.
+This section supersedes their old login and public-access status.
+
+---
+
 # Ubuntu Server Setup
 
 ## Software
