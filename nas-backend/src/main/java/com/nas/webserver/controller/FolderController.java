@@ -11,15 +11,25 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.nas.webserver.service.FolderService;
+import com.nas.webserver.service.FileMetadataService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @RestController
 @RequestMapping("/api/folders")
 public class FolderController {
 
     private final FolderService folderService;
+    private final FileMetadataService metadataService;
 
-    public FolderController(FolderService folderService) {
+    @Autowired
+    public FolderController(FolderService folderService, FileMetadataService metadataService) {
         this.folderService = folderService;
+        this.metadataService = metadataService;
+    }
+
+    // Preserve the simple constructor for existing unit tests.
+    public FolderController(FolderService folderService) {
+        this(folderService, null);
     }
 
     // Create a folder
@@ -43,6 +53,9 @@ public class FolderController {
             @PathVariable String name,
             @RequestParam String newName) throws IOException {
         folderService.renameFolder(name, newName);
+        if (metadataService != null) {
+            metadataService.renameFolder(name, newName);
+        }
         return ResponseEntity.ok("Folder renamed successfully");
     }
 
