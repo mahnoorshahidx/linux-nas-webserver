@@ -36,4 +36,5 @@ public class FileMetadata {
     public String getUploadedBy() { return uploadedBy; }
     public void setUploadedBy(String v) { uploadedBy=v; }
     public LocalDateTime getUploadedAt() { return uploadedAt; }
+    public void setUploadedAt(LocalDateTime value) { uploadedAt = value; }
 }
