@@ -1,3 +1,4 @@
+
 package com.nas.webserver;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -28,6 +29,7 @@ class BackupControllerTest {
 
     @BeforeEach
     void setUp() throws Exception {
+
         storagePath = tempDir.resolve("uploads");
         backupPath = tempDir.resolve("backups");
 
@@ -41,6 +43,7 @@ class BackupControllerTest {
     // Test creating a backup
     @Test
     void testCreateBackup() throws Exception {
+
         Files.writeString(storagePath.resolve("test.txt"), "Hello");
 
         mockMvc.perform(post("/api/backups"))
@@ -54,6 +57,7 @@ class BackupControllerTest {
     // Test listing backups
     @Test
     void testListBackups() throws Exception {
+
         String backup = backupService.createBackup();
 
         mockMvc.perform(get("/api/backups"))
@@ -64,9 +68,10 @@ class BackupControllerTest {
     // Test restoring a backup
     @Test
     void testRestoreBackup() throws Exception {
-        Files.writeString(storagePath.resolve("test.txt"), "Hello");
 
+        Files.writeString(storagePath.resolve("test.txt"), "Hello");
         String backup = backupService.createBackup();
+
         Files.delete(storagePath.resolve("test.txt"));
 
         mockMvc.perform(post("/api/backups/{filename}/restore", backup))
@@ -81,6 +86,7 @@ class BackupControllerTest {
     // Test deleting a backup
     @Test
     void testDeleteBackup() throws Exception {
+
         String backup = backupService.createBackup();
 
         mockMvc.perform(delete("/api/backups/{filename}", backup))
@@ -94,6 +100,7 @@ class BackupControllerTest {
     // Test restoring a missing backup
     @Test
     void testRestoreMissingBackup() throws Exception {
+
         String missing =
                 "backup-00000000-0000-0000-0000-000000000000.zip";
 
@@ -104,6 +111,7 @@ class BackupControllerTest {
     // Test deleting a missing backup
     @Test
     void testDeleteMissingBackup() throws Exception {
+
         String missing =
                 "backup-00000000-0000-0000-0000-000000000000.zip";
 
@@ -114,20 +122,46 @@ class BackupControllerTest {
     // Test invalid backup filename
     @Test
     void testInvalidBackupName() throws Exception {
+
         mockMvc.perform(delete("/api/backups/invalid.zip"))
                 .andExpect(status().isBadRequest());
     }
 
-    // Test restoring into nonempty storage
+    // Test restoring with an unrelated file present
     @Test
-    void testRestoreNonEmptyStorage() throws Exception {
+    void testRestoreWithUnrelatedFile() throws Exception {
+
+        Files.writeString(storagePath.resolve("test.txt"), "Hello");
         String backup = backupService.createBackup();
 
+        Files.delete(storagePath.resolve("test.txt"));
         Files.writeString(storagePath.resolve("existing.txt"), "Data");
 
         mockMvc.perform(post("/api/backups/{filename}/restore", backup))
-                .andExpect(status().isConflict())
+                .andExpect(status().isOk())
                 .andExpect(content().string(
-                        "Storage must be empty before restoring"));
+                        "Backup restored successfully"));
+
+        assertEquals("Hello",
+                Files.readString(storagePath.resolve("test.txt")));
+
+        assertEquals("Data",
+                Files.readString(storagePath.resolve("existing.txt")));
+    }
+
+    // Test rejecting a conflicting existing file
+    @Test
+    void testRestoreConflictingFile() throws Exception {
+
+        Files.writeString(storagePath.resolve("test.txt"), "Original");
+        String backup = backupService.createBackup();
+
+        Files.writeString(storagePath.resolve("test.txt"), "Changed");
+
+        mockMvc.perform(post("/api/backups/{filename}/restore", backup))
+                .andExpect(status().isConflict());
+
+        assertEquals("Changed",
+                Files.readString(storagePath.resolve("test.txt")));
     }
 }
