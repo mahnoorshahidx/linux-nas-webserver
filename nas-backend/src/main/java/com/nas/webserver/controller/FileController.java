@@ -17,18 +17,29 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.nas.webserver.service.FileService;
+import com.nas.webserver.service.FileMetadataService;
+import org.springframework.beans.factory.annotation.Autowired;
 
 @RestController
 @RequestMapping("/api/files")
 public class FileController {
 
     private final FileService fileService;
+    private final FileMetadataService metadataService;
 
-    public FileController(FileService fileService) {
+    @Autowired
+    public FileController(FileService fileService, FileMetadataService metadataService) {
         this.fileService = fileService;
+        this.metadataService = metadataService;
+    }
+
+    // Existing standalone controller tests use the filesystem-only constructor.
+    public FileController(FileService fileService) {
+        this(fileService, null);
     }
 
     // Upload a file to main storage or a folder
+    @org.springframework.security.access.prepost.PreAuthorize("@accountPermissionService.canWrite(authentication)")
     @PostMapping("/upload")
     public ResponseEntity<String> uploadFile(
             @RequestParam("file") MultipartFile file,
@@ -36,12 +47,26 @@ public class FileController {
             throws IOException {
 
         fileService.uploadFile(file, folder);
+        if (metadataService != null) {
+            try {
+                metadataService.recordUpload(file, folder);
+            } catch (IOException | RuntimeException error) {
+                // Don't leave a new file without a corresponding database record.
+                try {
+                    fileService.deleteFile(file.getOriginalFilename(), folder);
+                } catch (IOException cleanup) {
+                    error.addSuppressed(cleanup);
+                }
+                throw error;
+            }
+        }
 
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body("File uploaded successfully");
     }
 
     // List files in main storage or a folder
+    @org.springframework.security.access.prepost.PreAuthorize("@accountPermissionService.canRead(authentication)")
     @GetMapping
     public List<String> listFiles(
             @RequestParam(required = false) String folder)
@@ -51,6 +76,7 @@ public class FileController {
     }
 
     // Download a file
+    @org.springframework.security.access.prepost.PreAuthorize("@accountPermissionService.canRead(authentication)")
     @GetMapping("/download/{filename}")
     public ResponseEntity<Resource> downloadFile(
             @PathVariable String filename,
@@ -71,6 +97,7 @@ public class FileController {
     }
 
     // Delete a file
+    @org.springframework.security.access.prepost.PreAuthorize("@accountPermissionService.canEdit(authentication)")
     @DeleteMapping("/{filename}")
     public ResponseEntity<String> deleteFile(
             @PathVariable String filename,
@@ -78,6 +105,9 @@ public class FileController {
             throws IOException {
 
         fileService.deleteFile(filename, folder);
+        if (metadataService != null) {
+            metadataService.remove(filename, folder);
+        }
 
         return ResponseEntity.ok("File deleted successfully");
     }

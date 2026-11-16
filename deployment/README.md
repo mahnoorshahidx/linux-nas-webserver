@@ -1,0 +1,168 @@
+## Current tested deployment
+
+The laptop runs the Ubuntu VM, Apache, Spring Boot, MySQL, and storage.
+Public access uses Cloudflare Tunnel.
+
+### Start in Ubuntu
+
+    sudo systemctl start mysql apache2
+    cd ~/projects/linux-nas-webserver/nas-backend
+    source ~/.config/linux-nas/runtime.env
+    SERVER_FORWARD_HEADERS_STRATEGY=framework SERVER_SERVLET_SESSION_COOKIE_SECURE=true bash ./mvnw spring-boot:run
+
+runtime.env contains private, machine-specific settings outside Git.
+Other machines need their own database credentials and configuration.
+Login uses accounts stored in MySQL.
+
+### Public access from Windows PowerShell
+
+    cloudflared tunnel --url https://127.0.0.1:8443 --no-tls-verify
+
+The verification exception accommodates the local self-signed certificate.
+Use the public HTTPS URL printed by cloudflared.
+The URL is temporary and changes when the tunnel is recreated.
+Keep the laptop awake, VM running, application running, and tunnel open.
+
+VirtualBox NAT forwarding:
+- Windows loopback 8081 to Ubuntu 80.
+- Windows loopback 8443 to Ubuntu 443.
+- Apache proxies to Spring Boot on 8080.
+
+### Monitoring and verification
+
+Admins see Dashboard and System Monitoring links in the sidebar.
+The pages are /dashboard.html and /monitoring.html.
+Regular users do not see these links; monitoring access is forbidden.
+
+Public login, download, dashboard measurements, and journal logs were
+demonstrated over phone cellular data.
+53 selected service/controller tests passed before the navigation fix.
+The navigation fix compiled and passed manual local and public checks.
+Final team integration and remaining application requirements are separate.
+
+### Configuration backup handoff
+
+Preserve Apache site/proxy and HTTPS settings, enabled module/site
+selections, UFW rules, and application runtime settings.
+Apache templates are in deployment/apache.
+Local HTTPS certificate/key files are under /etc/apache2/ssl.
+Credentials and private keys need protected backups outside Git.
+Document VirtualBox forwarding separately on Windows.
+Mahnoor handles configuration backup/restore implementation.
+
+The older setup instructions below are retained for reference.
+This section supersedes their old login and public-access status.
+
+---
+
+# Ubuntu Server Setup
+
+## Software
+Ubuntu with Java 21 JDK, Apache, MySQL, and curl.
+
+Install with:
+    sudo apt update
+    sudo apt install -y openjdk-21-jdk apache2 mysql-server curl
+
+## Start Spring Boot
+From the repository root:
+    cd nas-backend
+    bash ./mvnw spring-boot:run
+
+Keep that terminal open. The app runs on port 8080.
+The current development login uses username user and the generated
+password printed in the terminal during startup.
+
+## Apache configuration
+From the repository root in a second terminal:
+    sudo a2enmod proxy proxy_http
+    sudo cp deployment/apache/nas.conf /etc/apache2/sites-available/nas.conf
+    sudo a2dissite 000-default.conf
+    sudo a2ensite nas.conf
+    sudo apache2ctl configtest && sudo systemctl reload apache2
+
+Apache forwards requests from port 80 to Spring Boot on port 8080.
+
+## VirtualBox forwarding
+Network mode: NAT
+Protocol: TCP
+Host IP: 127.0.0.1
+Host port: 8081
+Guest IP: blank
+Guest port: 80
+
+Windows browser address:
+http://127.0.0.1:8081/files.html
+
+## Firewall
+Run inside the Ubuntu VM console:
+    sudo ufw default deny incoming
+    sudo ufw default allow outgoing
+    sudo ufw allow 80/tcp
+    sudo ufw enable
+
+## Verified
+Java 21 is installed.
+Apache and MySQL are active.
+The file-management page loads from Windows through Apache.
+The page loads with the firewall enabled.
+
+Router forwarding and external remote access still need testing.
+
+## Local HTTPS testing
+
+The HTTPS site configuration is deployment/apache/nas-ssl.conf.
+It uses a self-signed certificate for localhost, valid for 30 days.
+This certificate is for local testing, not the final public deployment.
+
+Create the certificate and private key on each server:
+    sudo install -d -m 700 /etc/apache2/ssl
+    sudo openssl req -x509 -newkey rsa:2048 -sha256 -noenc -days 30 -keyout /etc/apache2/ssl/nas-local.key -out /etc/apache2/ssl/nas-local.crt -subj "/CN=localhost" -addext "subjectAltName=DNS:localhost,IP:127.0.0.1"
+    sudo chmod 600 /etc/apache2/ssl/nas-local.key
+
+Enable the HTTPS site from the repository root:
+    sudo a2enmod ssl headers
+    sudo cp deployment/apache/nas-ssl.conf /etc/apache2/sites-available/nas-ssl.conf
+    sudo a2ensite nas-ssl.conf
+    sudo apache2ctl configtest && sudo systemctl reload apache2
+
+Start Spring Boot with HTTPS proxy awareness and secure session cookies:
+    cd nas-backend
+    SERVER_FORWARD_HEADERS_STRATEGY=framework SERVER_SERVLET_SESSION_COOKIE_SECURE=true bash ./mvnw spring-boot:run
+
+These environment settings apply only to this run.
+Use HTTPS when running with secure session cookies.
+
+Ubuntu browser addresses:
+    https://localhost/dashboard.html
+    https://localhost/monitoring.html
+
+The browser will warn because the local certificate is self-signed.
+Verify HTTPS from an Ubuntu terminal:
+    sudo curl --cacert /etc/apache2/ssl/nas-local.crt -I https://localhost/dashboard.html
+
+An unauthenticated request can return 401. The session cookie should
+include Secure and HttpOnly.
+
+Private keys and generated backups must not be committed.
+Windows HTTPS forwarding:
+    Add a second VirtualBox NAT forwarding rule:
+    Name: NAS-HTTPS
+    Protocol: TCP
+    Host IP: 127.0.0.1
+    Host port: 8443
+    Guest IP: blank
+    Guest port: 443
+
+Allow HTTPS through the Ubuntu firewall:
+    sudo ufw allow 443/tcp
+
+Windows browser addresses:
+    https://127.0.0.1:8443/dashboard.html
+    https://127.0.0.1:8443/monitoring.html
+
+The dashboard has been verified from Windows over HTTPS.
+These loopback forwarding rules provide access from the Windows
+host only; they do not provide public internet access.
+Public access and integration with the team's final authentication
+and permissions remain pending.

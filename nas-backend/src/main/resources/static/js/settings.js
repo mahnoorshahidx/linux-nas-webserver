@@ -42,7 +42,7 @@ async function account() {
         const a = await api('/api/account/me');
         selfId = a.userId; $('profile').elements.username.value = a.username;
         $('profile').elements.email.value = a.email;
-        $('accountInfo').textContent = `Role: ${a.roleName} · Account ID: ${a.userId}`;
+        $('accountInfo').textContent = `Role: ${a.roleName}`;
 
         if (a.roleName === 'ADMIN') {
             $('adminSection').hidden = false;
@@ -70,7 +70,7 @@ $('profile').addEventListener('submit', async e => {
         status('profileStatus', 'Saved. If you changed your username, please sign in again.');
 
         if (oldName && a.username !== undefined)
-            $('accountInfo').textContent = `Role: ${a.roleName} · Account ID: ${a.userId}`;
+            $('accountInfo').textContent = `Role: ${a.roleName}`;
     }
 
     catch (err) {

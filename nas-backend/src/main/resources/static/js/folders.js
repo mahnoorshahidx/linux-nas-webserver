@@ -1,3 +1,21 @@
+async function fetchWithCsrf(url, options = {}) {
+    const method = (options.method || "GET").toUpperCase();
+
+    if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
+        const response = await fetch("/api/csrf", { cache: "no-store" });
+        if (!response.ok) {
+            throw new Error("Please sign in again and retry.");
+        }
+
+        const csrf = await response.json();
+        const headers = new Headers(options.headers);
+        headers.set(csrf.headerName, csrf.token);
+        options = { ...options, headers };
+    }
+
+    return fetch(url, options);
+}
+
 const folderList = document.getElementById("folderList");
 const folderFileList = document.getElementById("folderFileList");
 const toast = document.getElementById("toast");
@@ -121,7 +139,7 @@ function addName(cell, name, iconText, clickable = false) {
 // Load all folders
 async function loadFolders() {
     try {
-        const response = await fetch("/api/folders");
+        const response = await fetchWithCsrf("/api/folders");
 
         if (!response.ok) {
             throw new Error("Unable to load folders.");
@@ -232,7 +250,7 @@ async function loadFolderFiles() {
     const folder = currentFolder;
 
     try {
-        const response = await fetch(
+        const response = await fetchWithCsrf(
             "/api/files?folder=" + encodeURIComponent(folder)
         );
 
@@ -353,7 +371,7 @@ folderUploadForm.addEventListener("submit", async event => {
         const data = new FormData();
         data.append("file", chosenFolderFile);
 
-        const response = await fetch(
+        const response = await fetchWithCsrf(
             "/api/files/upload?folder=" +
             encodeURIComponent(folder),
             {
@@ -395,7 +413,7 @@ document.getElementById("createFolderForm")
         busy = true;
 
         try {
-            const response = await fetch(
+            const response = await fetchWithCsrf(
                 "/api/folders?name=" + encodeURIComponent(name),
                 { method: "POST" }
             );
@@ -483,7 +501,7 @@ document.getElementById("renameFolderForm")
         const oldName = renameTarget;
 
         try {
-            const response = await fetch(
+            const response = await fetchWithCsrf(
                 "/api/folders/" + encodeURIComponent(oldName) +
                 "?newName=" + encodeURIComponent(newName),
                 { method: "PUT" }
@@ -584,7 +602,7 @@ document.getElementById("confirmDelete")
                         : "/api/files/" + encodeURIComponent(name) +
                           "?folder=" + encodeURIComponent(folder);
 
-                    const response = await fetch(url, {
+                    const response = await fetchWithCsrf(url, {
                         method: "DELETE"
                     });
 

@@ -1,3 +1,21 @@
+async function fetchWithCsrf(url, options = {}) {
+    const method = (options.method || "GET").toUpperCase();
+
+    if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
+        const response = await fetch("/api/csrf", { cache: "no-store" });
+        if (!response.ok) {
+            throw new Error("Please sign in again and retry.");
+        }
+
+        const csrf = await response.json();
+        const headers = new Headers(options.headers);
+        headers.set(csrf.headerName, csrf.token);
+        options = { ...options, headers };
+    }
+
+    return fetch(url, options);
+}
+
 const backupList = document.getElementById("backupList");
 const createBackupButton = document.getElementById("createBackupButton");
 const restoreModal = document.getElementById("restoreModal");
@@ -50,7 +68,7 @@ function updateSelection() {
 // Load available backups
 async function loadBackups() {
     try {
-        const response = await fetch("/api/backups");
+        const response = await fetchWithCsrf("/api/backups");
 
         if (!response.ok) {
             throw new Error("Unable to load backups.");
@@ -190,7 +208,7 @@ createBackupButton.addEventListener("click", async () => {
     createBackupButton.textContent = "Creating...";
 
     try {
-        const response = await fetch("/api/backups", {
+        const response = await fetchWithCsrf("/api/backups", {
             method: "POST"
         });
 
@@ -246,7 +264,7 @@ document.getElementById("confirmRestore")
         const filename = selectedBackup;
 
         try {
-            const response = await fetch(
+            const response = await fetchWithCsrf(
                 "/api/backups/" +
                 encodeURIComponent(filename) +
                 "/restore",
@@ -333,7 +351,7 @@ document.getElementById("confirmDelete")
         try {
             for (const filename of filenames) {
                 try {
-                    const response = await fetch(
+                    const response = await fetchWithCsrf(
                         "/api/backups/" +
                         encodeURIComponent(filename),
                         { method: "DELETE" }

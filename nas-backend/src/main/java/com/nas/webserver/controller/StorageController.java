@@ -1,6 +1,5 @@
 package com.nas.webserver.controller;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 import java.io.IOException;
 import java.nio.file.*;
@@ -9,13 +8,14 @@ import java.util.Map;
 
 @RestController
 public class StorageController {
-    private final Path root;
-    public StorageController(@Value("${nas.storage.path}") String path) throws IOException {
-        root = Path.of(path).toAbsolutePath().normalize();
-        Files.createDirectories(root);
+    private final com.nas.webserver.service.UserStorageService userStorage;
+    public StorageController(
+            com.nas.webserver.service.UserStorageService userStorage) {
+        this.userStorage = userStorage;
     }
     @GetMapping("/api/storage/overview")
     public Map<String,Object> overview() throws IOException {
+        Path root = userStorage.root();
         long[] bytes = {0}, files = {0}, folders = {0};
         Files.walkFileTree(root, new SimpleFileVisitor<Path>() {
             @Override public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) {

@@ -6,19 +6,16 @@ import java.nio.file.*;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 @Service
 public class FileService {
 
-    private final Path storagePath;
+    private final UserStorageService userStorage;
 
-    public FileService(@Value("${nas.storage.path}") String storage)
-            throws IOException {
-        storagePath = Paths.get(storage).toAbsolutePath().normalize();
-        Files.createDirectories(storagePath);
+    public FileService(UserStorageService userStorage) {
+        this.userStorage = userStorage;
     }
 
     // Validate a file or folder name
@@ -34,14 +31,14 @@ public class FileService {
     // Find the storage folder
     private Path resolveFolder(String folder) throws IOException {
         if (folder == null || folder.isBlank()) {
-            return storagePath;
+            return userStorage.root();
         }
 
         validateName(folder);
 
-        Path directory = storagePath.resolve(folder).normalize();
+        Path directory = userStorage.root().resolve(folder).normalize();
 
-        if (!directory.getParent().equals(storagePath)) {
+        if (!directory.getParent().equals(userStorage.root())) {
             throw new IllegalArgumentException("Invalid folder path");
         }
 

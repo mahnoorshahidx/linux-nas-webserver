@@ -1,0 +1,93 @@
+.admin-form {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    align-items: end;
+    margin: 16px 0
+}
+
+.admin-form label {
+    display: grid;
+    gap: 5px;
+    flex: 1 1 180px
+}
+
+.admin-form input,
+.admin-user input,
+.admin-user select {
+    border: 1px solid #c9c3d5;
+    border-radius: 8px;
+    padding: 9px;
+    background: white;
+    color: #241d30;
+    max-width: 100%;
+    box-sizing: border-box
+}
+
+.admin-list {
+    display: grid;
+    gap: 14px;
+    margin-top: 18px
+}
+
+.admin-user {
+    border: 1px solid #ded8e7;
+    border-radius: 12px;
+    padding: 16px;
+    display: grid;
+    gap: 12px
+}
+
+.admin-user-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap
+}
+
+.admin-user-header small {
+    color: #655b72
+}
+
+.admin-fields {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap
+}
+
+.admin-fields label {
+    display: grid;
+    gap: 4px;
+    flex: 1 1 160px
+}
+
+.admin-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center
+}
+
+.admin-actions button,
+.permission-toggle {
+    border: 1px solid #9d8bb6;
+    background: white;
+    border-radius: 8px;
+    padding: 9px 12px;
+    cursor: pointer;
+    color: #36294c
+}
+
+.permission-toggle[aria-pressed=true] {
+    background: #61438e;
+    color: white
+}
+
+.admin-actions button.danger {
+    color: #ad2637;
+    border-color: #d8a4ac
+}
+
+#adminMessage {
+    min-height: 1.4em
+}

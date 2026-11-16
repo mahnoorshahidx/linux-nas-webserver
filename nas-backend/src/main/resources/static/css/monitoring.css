@@ -1,0 +1,27 @@
+#logsStatus {
+    color: var(--muted, #8B8298);
+    margin: 16px 0;
+}
+
+#logsStatus.is-error {
+    color: #A32940;
+}
+
+#logOutput {
+    background: #FAF8FD;
+    color: #40364F;
+    border: 1px solid #EAE2F2;
+    border-radius: 12px;
+    padding: 18px;
+    max-height: 520px;
+    overflow: auto;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    font-size: 13px;
+    line-height: 1.65;
+}
+
+#logOutput:focus-visible {
+    outline: 2px solid #8060B1;
+    outline-offset: 3px;
+}

@@ -5,6 +5,7 @@ import com.nas.webserver.model.Role;
 import com.nas.webserver.model.User;
 import com.nas.webserver.repository.RoleRepository;
 import com.nas.webserver.repository.UserRepository;
+import com.nas.webserver.repository.FileMetadataRepository;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -22,12 +23,14 @@ public class UserController {
     private final UserRepository users;
     private final RoleRepository roles;
     private final PasswordEncoder encoder;
+    private final FileMetadataRepository fileMetadata;
 
     public UserController(UserRepository users, RoleRepository roles,
-                          PasswordEncoder encoder) {
+                          PasswordEncoder encoder, FileMetadataRepository fileMetadata) {
         this.users = users;
         this.roles = roles;
         this.encoder = encoder;
+        this.fileMetadata = fileMetadata;
     }
 
     public record RegistrationRequest(
@@ -41,6 +44,7 @@ public class UserController {
         String password) {}
 
     public record RoleRequest(@NotBlank String roleName) {}
+    public record PermissionsRequest(boolean canRead, boolean canWrite, boolean canEdit) {}
 
     @PostMapping("/register")
     public ResponseEntity<UserResponse> register(
@@ -59,6 +63,11 @@ public class UserController {
         user.setEmail(request.email().trim().toLowerCase());
         user.setPassword(encoder.encode(request.password()));
         user.setRole(role);
+        // New accounts can use their own NAS storage immediately.
+        // Administrators may restrict these account-level permissions later.
+        user.setCanRead(true);
+        user.setCanWrite(true);
+        user.setCanEdit(true);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new UserResponse(users.save(user)));
     }
@@ -113,12 +122,25 @@ public class UserController {
         }).orElse(ResponseEntity.notFound().build());
     }
 
+    @PutMapping("/{id}/permissions")
+    public ResponseEntity<UserResponse> changePermissions(
+            @PathVariable Long id, @RequestBody PermissionsRequest request) {
+        return users.findById(id).map(user -> {
+            user.setCanRead(request.canRead());
+            user.setCanWrite(request.canWrite());
+            user.setCanEdit(request.canEdit());
+            return ResponseEntity.ok(new UserResponse(users.save(user)));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id,
             org.springframework.security.core.Authentication authentication) {
         if (users.findById(id).map(u -> u.getUsername().equals(authentication.getName())).orElse(false))
             return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
         if (!users.existsById(id)) return ResponseEntity.notFound().build();
+        if (fileMetadata.findAll().stream().anyMatch(f -> f.getOwner() != null && id.equals(f.getOwner().getUserId())))
+            return ResponseEntity.status(HttpStatus.CONFLICT).build();
         users.deleteById(id);
         return ResponseEntity.noContent().build();
     }
