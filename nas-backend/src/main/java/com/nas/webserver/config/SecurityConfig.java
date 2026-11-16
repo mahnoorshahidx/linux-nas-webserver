@@ -42,6 +42,8 @@ public class SecurityConfig {
                         "/backups.html").hasRole("ADMIN")
                 .requestMatchers("/api/file-metadata",
                         "/api/file-metadata/**").hasRole("ADMIN")
+                .requestMatchers("/dashboard.html", "/monitoring.html",
+                        "/api/monitoring", "/api/monitoring/**").hasRole("ADMIN")
                 .requestMatchers("/api/users/**").hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
