@@ -34,7 +34,6 @@ public class SecurityConfig {
                 new DaoAuthenticationProvider(userDetailsService);
 
         provider.setPasswordEncoder(passwordEncoder);
-
         return provider;
     }
 
@@ -78,6 +77,14 @@ public class SecurityConfig {
                         "/api/file-metadata/**"
                 ).hasRole("ADMIN")
 
+                // Only administrators can access monitoring
+                .requestMatchers(
+                        "/dashboard.html",
+                        "/monitoring.html",
+                        "/api/monitoring",
+                        "/api/monitoring/**"
+                ).hasRole("ADMIN")
+
                 // Only administrators can manage users
                 .requestMatchers("/api/users/**")
                 .hasRole("ADMIN")
@@ -117,4 +124,3 @@ public class SecurityConfig {
         return http.build();
     }
 }
-
