@@ -85,6 +85,8 @@ public class SecurityConfig {
                         "/api/monitoring/**"
                 ).hasRole("ADMIN")
 
+                .requestMatchers("/admin-users.html").hasRole("ADMIN")
+
                 // Only administrators can manage users
                 .requestMatchers("/api/users/**")
                 .hasRole("ADMIN")
@@ -99,7 +101,18 @@ public class SecurityConfig {
 
             // Show custom page instead of 403 Whitelabel error
             .exceptionHandling(exceptions -> exceptions
-                .accessDeniedPage("/access-denied.html")
+                .accessDeniedHandler((request, response, denied) -> {
+                    if (request.getRequestURI().startsWith(
+                            request.getContextPath() + "/api/")) {
+                        response.setStatus(403);
+                        response.setContentType("text/plain;charset=UTF-8");
+                        response.getWriter().write("Permission denied.");
+                    } else {
+                        var handler = new org.springframework.security.web.access.AccessDeniedHandlerImpl();
+                        handler.setErrorPage("/access-denied.html");
+                        handler.handle(request, response, denied);
+                    }
+                })
             )
 
             // Login configuration

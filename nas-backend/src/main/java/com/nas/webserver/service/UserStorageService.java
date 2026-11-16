@@ -49,6 +49,29 @@ public class UserStorageService {
         return account;
     }
 
+    public Path resolveStoredFile(String key) throws IOException {
+        if (key == null)
+            throw new IOException("Invalid stored file key");
+        String[] parts = key.split("/", -1);
+        if (parts.length < 3 || !parts[0].equals(".accounts") || !parts[1].matches("[1-9][0-9]*"))
+            throw new IOException("Invalid account file key");
+        for (String part : parts) {
+            if (part.isBlank() || part.equals(".") || part.equals("..") || part.contains("\\"))
+                throw new IOException("Invalid file path component");
+        }
+        Path base = storagePath.toRealPath();
+        Path candidate = base.resolve(key).normalize();
+        if (!candidate.startsWith(base) || !Files.isRegularFile(candidate, LinkOption.NOFOLLOW_LINKS))
+            throw new NoSuchFileException("File missing");
+        // Do not follow symlinks in any component of the stored path.
+        Path walk = base;
+        for (Path part : base.relativize(candidate)) {
+            walk = walk.resolve(part);
+            if (Files.isSymbolicLink(walk)) throw new IOException("Unsafe symbolic link");
+        }
+        return candidate;
+    }
+
     private void ensureDirectory(Path directory) throws IOException {
         try {
             Files.createDirectory(directory);

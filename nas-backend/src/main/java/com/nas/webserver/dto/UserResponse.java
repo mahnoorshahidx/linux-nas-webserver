@@ -10,11 +10,17 @@ public class UserResponse {
     private String email;
     private LocalDateTime createdAt;
     private String roleName;
+    private boolean canRead;
+    private boolean canWrite;
+    private boolean canEdit;
 
     public UserResponse(User user) {
         this.userId = user.getUserId();
         this.username = user.getUsername();
         this.email = user.getEmail();
+        this.canRead = user.isCanRead();
+        this.canWrite = user.isCanWrite();
+        this.canEdit = user.isCanEdit();
         this.createdAt = user.getCreatedAt();
 
         if (user.getRole() != null) {
@@ -22,6 +28,9 @@ public class UserResponse {
         }
     }
 
+    public boolean isCanRead() { return canRead; }
+    public boolean isCanWrite() { return canWrite; }
+    public boolean isCanEdit() { return canEdit; }
     public Long getUserId() {
         return userId;
     }

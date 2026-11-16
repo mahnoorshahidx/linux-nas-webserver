@@ -13,7 +13,8 @@ async function loadAdminNavigation() {
 
         const links = [
             ["/dashboard.html", "Dashboard"],
-            ["/monitoring.html", "System Monitoring"]
+            ["/monitoring.html", "System Monitoring"],
+            ["/admin-users.html", "User Management"]
         ];
 
         const fragment = document.createDocumentFragment();

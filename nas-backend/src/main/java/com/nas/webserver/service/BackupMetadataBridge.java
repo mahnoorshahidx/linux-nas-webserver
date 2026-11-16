@@ -162,6 +162,9 @@ public class BackupMetadataBridge {
             item.setContentType(record.type().isBlank() ? null : record.type());
             item.setUploadedBy(record.uploader().isBlank() ? null : record.uploader());
             if (record.uploadedAt() != null) item.setUploadedAt(record.uploadedAt());
+            String[] parts = record.path().split("/");
+            long ownerId = Long.parseLong(parts[1]);
+            item.setOwner(users.findById(ownerId).orElseThrow(() -> new IllegalStateException("Missing backup owner")));
             metadata.save(item);
         }
         metadata.flush();

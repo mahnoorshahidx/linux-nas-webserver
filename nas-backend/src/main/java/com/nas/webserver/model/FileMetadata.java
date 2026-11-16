@@ -24,6 +24,14 @@ public class FileMetadata {
     @Column(name="uploaded_at", nullable=false)
     private LocalDateTime uploadedAt = LocalDateTime.now();
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "owner_id")
+    private User owner;
+
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    public User getOwner() { return owner; }
+    public void setOwner(User owner) { this.owner = owner; }
+
     public Long getId() { return id; }
     public String getStoragePath() { return storagePath; }
     public void setStoragePath(String v) { storagePath=v; }

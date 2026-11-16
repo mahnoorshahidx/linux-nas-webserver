@@ -15,11 +15,13 @@ import java.util.List;
 public class FileMetadataService {
     private final FileMetadataRepository repository;
     private final UserStorageService userStorage;
+    private final com.nas.webserver.repository.UserRepository users;
 
     public FileMetadataService(FileMetadataRepository repository,
-                               UserStorageService userStorage) {
+                               UserStorageService userStorage, com.nas.webserver.repository.UserRepository users) {
         this.repository = repository;
         this.userStorage = userStorage;
+        this.users = users;
     }
 
     // Include the account directory so two users can upload the same filename.
@@ -39,7 +41,10 @@ public class FileMetadataService {
         metadata.setFileSize(file.getSize());
         metadata.setContentType(file.getContentType());
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        metadata.setUploadedBy(auth == null ? null : auth.getName());
+        if (auth == null || !auth.isAuthenticated()) throw new org.springframework.security.access.AccessDeniedException("Login required");
+        var owner = users.findByUsername(auth.getName()).orElseThrow(() -> new org.springframework.security.access.AccessDeniedException("Account not found"));
+        metadata.setOwner(owner);
+        metadata.setUploadedBy(owner.getUsername());
         repository.save(metadata);
     }
 

@@ -39,6 +39,7 @@ public class FileController {
     }
 
     // Upload a file to main storage or a folder
+    @org.springframework.security.access.prepost.PreAuthorize("@accountPermissionService.canWrite(authentication)")
     @PostMapping("/upload")
     public ResponseEntity<String> uploadFile(
             @RequestParam("file") MultipartFile file,
@@ -65,6 +66,7 @@ public class FileController {
     }
 
     // List files in main storage or a folder
+    @org.springframework.security.access.prepost.PreAuthorize("@accountPermissionService.canRead(authentication)")
     @GetMapping
     public List<String> listFiles(
             @RequestParam(required = false) String folder)
@@ -74,6 +76,7 @@ public class FileController {
     }
 
     // Download a file
+    @org.springframework.security.access.prepost.PreAuthorize("@accountPermissionService.canRead(authentication)")
     @GetMapping("/download/{filename}")
     public ResponseEntity<Resource> downloadFile(
             @PathVariable String filename,
@@ -94,6 +97,7 @@ public class FileController {
     }
 
     // Delete a file
+    @org.springframework.security.access.prepost.PreAuthorize("@accountPermissionService.canEdit(authentication)")
     @DeleteMapping("/{filename}")
     public ResponseEntity<String> deleteFile(
             @PathVariable String filename,

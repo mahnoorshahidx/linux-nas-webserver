@@ -1,0 +1,29 @@
+.share-panel[hidden], .share-panel [hidden] { display:none !important; }
+.share-panel { margin-top:22px; border:1px solid #ddd5eb; box-shadow:0 8px 30px rgba(45,24,77,.07); }
+.share-panel-heading { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; margin-bottom:20px; }
+.share-panel-heading h2 { margin:2px 0 5px; }
+.share-panel-heading p { margin:0; }
+.share-eyebrow { font-size:11px; font-weight:750; letter-spacing:.1em; color:#7b48a2; }
+.share-add-box { background:#faf8fd; border:1px solid #e6deed; padding:18px; border-radius:12px; margin-bottom:20px; }
+.share-add-box label { display:block; font-weight:650; margin-bottom:9px; }
+.share-search-row { display:flex; gap:9px; flex-wrap:wrap; }
+.share-search-row input { flex:1; min-width:180px; border:1px solid #cfc6dc; padding:10px 12px; border-radius:8px; background:white; color:#241d2d; }
+.share-add-box #shareNewUser { padding-top:10px; }
+.share-add-box #shareNewUserName { font-weight:650; margin-bottom:10px; }
+.share-permission-row { display:flex; flex-wrap:wrap; gap:7px; margin:8px 0; }
+.share-toggle { background:#fff; border:1px solid #cfc3db; color:#49365d; border-radius:8px; padding:8px 13px; cursor:pointer; font:inherit; font-size:13px; }
+.share-toggle[aria-pressed="true"] { background:#6d338f; border-color:#6d338f; color:#fff; }
+.share-toggle:focus-visible { outline:3px solid #b58bd3; outline-offset:2px; }
+.share-access-list { display:grid; gap:10px; margin:12px 0; }
+.share-person { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; padding:13px; border:1px solid #e3ddeb; border-radius:10px; }
+.share-person-info { display:grid; gap:3px; min-width:150px; overflow-wrap:anywhere; }
+.share-person-info span, .share-help { font-size:13px; color:#71677c; }
+.share-person-controls { display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+.share-owner-tag { font-size:12px; background:#eee5f6; color:#613180; border-radius:99px; padding:7px 12px; }
+.share-remove { background:transparent; color:#ad3342; border:1px solid #e4b7be; border-radius:8px; padding:8px 12px; cursor:pointer; }
+.share-error { color:#b42335 !important; }
+#sharePanelStatus, #shareLookupStatus { min-height:1.4em; margin-top:10px; }
+@media(max-width:650px) { .share-panel-heading, .share-person { align-items:stretch; } .share-person-controls { width:100%; } }
+
+.share-delete-confirm { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-top:8px; padding:10px; border:1px solid #d5b2b2; border-radius:8px; }
+.share-delete-confirm span { font-size:0.9rem; }

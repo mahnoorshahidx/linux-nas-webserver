@@ -9,6 +9,7 @@ public class User {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "user_id")
 	private Long userId;
 
 	@Column(nullable = false, unique = true, length = 50)
@@ -26,6 +27,19 @@ public class User {
 	@JoinColumn(name="role_id")
 	private Role role;
 
+    @Column(name="can_read", nullable=false)
+    private boolean canRead = true;
+    @Column(name="can_write", nullable=false)
+    private boolean canWrite = true;
+    @Column(name="can_edit", nullable=false)
+    private boolean canEdit = true;
+
+    public boolean isCanRead() { return canRead; }
+    public void setCanRead(boolean v) { canRead = v; }
+    public boolean isCanWrite() { return canWrite; }
+    public void setCanWrite(boolean v) { canWrite = v; }
+    public boolean isCanEdit() { return canEdit; }
+    public void setCanEdit(boolean v) { canEdit = v; }
 	public User() {
 	}
 

@@ -33,6 +33,7 @@ public class FolderController {
     }
 
     // Create a folder
+    @org.springframework.security.access.prepost.PreAuthorize("@accountPermissionService.canWrite(authentication)")
     @PostMapping
     public ResponseEntity<String> createFolder(@RequestParam String name)
             throws IOException {
@@ -42,12 +43,14 @@ public class FolderController {
     }
 
     // List folders
+    @org.springframework.security.access.prepost.PreAuthorize("@accountPermissionService.canRead(authentication)")
     @GetMapping
     public List<String> listFolders() throws IOException {
         return folderService.listFolders();
     }
 
     // Rename a folder
+    @org.springframework.security.access.prepost.PreAuthorize("@accountPermissionService.canEdit(authentication)")
     @PutMapping("/{name}")
     public ResponseEntity<String> renameFolder(
             @PathVariable String name,
@@ -60,6 +63,7 @@ public class FolderController {
     }
 
     // Delete an empty folder
+    @org.springframework.security.access.prepost.PreAuthorize("@accountPermissionService.canEdit(authentication)")
     @DeleteMapping("/{name}")
     public ResponseEntity<String> deleteFolder(@PathVariable String name)
             throws IOException {

@@ -41,6 +41,9 @@ public class AdminBootstrapRunner implements CommandLineRunner {
             user.setEmail(email);
             user.setPassword(encoder.encode(password));
             user.setRole(admin);
+            user.setCanRead(true);
+            user.setCanWrite(true);
+            user.setCanEdit(true);
             users.save(user);
         }
     }
