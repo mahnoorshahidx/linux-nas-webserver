@@ -21,10 +21,20 @@ public class BackupMetadataBridge {
     static final String MANIFEST = ".nas-metadata.tsv";
     private final FileMetadataRepository metadata;
     private final UserRepository users;
+    private final com.nas.webserver.repository.FilePermissionRepository permissions;
+
+    @org.springframework.beans.factory.annotation.Autowired
+    public BackupMetadataBridge(FileMetadataRepository metadata, UserRepository users,
+            com.nas.webserver.repository.FilePermissionRepository permissions) {
+        this.metadata = metadata;
+        this.users = users;
+        this.permissions = permissions;
+    }
 
     public BackupMetadataBridge(FileMetadataRepository metadata, UserRepository users) {
         this.metadata = metadata;
         this.users = users;
+        this.permissions = null;
     }
 
     private static String encode(String value) {
@@ -37,8 +47,9 @@ public class BackupMetadataBridge {
     }
 
     // Metadata is included in NEW ZIPs, not written into uploads/.
+    @Transactional(readOnly = true)
     public String snapshot() {
-        StringBuilder text = new StringBuilder("NAS-METADATA-1\n");
+        StringBuilder text = new StringBuilder("NAS-METADATA-2\n");
         for (FileMetadata item : metadata.findAll()) {
             text.append(encode(item.getStoragePath())).append('\t')
                     .append(encode(item.getOriginalName())).append('\t')
@@ -46,18 +57,55 @@ public class BackupMetadataBridge {
                     .append(encode(item.getContentType())).append('\t')
                     .append(encode(item.getUploadedBy())).append('\t')
                     .append(item.getUploadedAt() == null ? "" : item.getUploadedAt())
+                    .append('\t').append(snapshotShares(item))
                     .append('\n');
         }
         return text.toString();
     }
 
+    public record Share(String username, boolean read, boolean write, boolean edit) {}
+
     public record Record(String path, String name, long size, String type,
-                         String uploader, LocalDateTime uploadedAt) {}
+                         String uploader, LocalDateTime uploadedAt, List<Share> shares) {
+        public Record(String path, String name, long size, String type,
+                      String uploader, LocalDateTime uploadedAt) {
+            this(path, name, size, type, uploader, uploadedAt, List.of());
+        }
+    }
+
+    private String snapshotShares(FileMetadata file) {
+        if (permissions == null) return "";
+        List<String> values = new ArrayList<>();
+        for (var permission : permissions.findByFile_Id(file.getId())) {
+            values.add(encode(permission.getUser().getUsername()) + ","
+                + (permission.isCanRead() ? "1" : "0")
+                + (permission.isCanWrite() ? "1" : "0")
+                + (permission.isCanEdit() ? "1" : "0"));
+        }
+        return String.join(";", values);
+    }
+
+    private static List<Share> parseShares(String value) throws IOException {
+        List<Share> shares = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        if (value.isEmpty()) return shares;
+        for (String entry : value.split(";", -1)) {
+            String[] fields = entry.split(",", -1);
+            if (fields.length != 2 || !fields[1].matches("[01]{3}"))
+                throw new IOException("Invalid sharing entry");
+            String username = decode(fields[0]);
+            if (username.isBlank() || username.length() > 50 || !seen.add(username))
+                throw new IOException("Invalid or duplicate sharing recipient");
+            shares.add(new Share(username, fields[1].charAt(0) == '1',
+                fields[1].charAt(1) == '1', fields[1].charAt(2) == '1'));
+        }
+        return shares;
+    }
 
     public List<Record> parse(String snapshot) throws IOException {
         if (snapshot == null) return List.of(); // Older backups have no manifest.
         String[] lines = snapshot.split("\\R", -1);
-        if (lines.length == 0 || !lines[0].equals("NAS-METADATA-1")) {
+        if (lines.length == 0 || !(lines[0].equals("NAS-METADATA-1") || lines[0].equals("NAS-METADATA-2"))) {
             throw new IOException("Invalid metadata manifest");
         }
         List<Record> records = new ArrayList<>();
@@ -66,7 +114,7 @@ public class BackupMetadataBridge {
             for (int i = 1; i < lines.length; i++) {
                 if (lines[i].isEmpty()) continue;
                 String[] fields = lines[i].split("\\t", -1);
-                if (fields.length != 6) throw new IOException("Invalid metadata row");
+                if (fields.length != (lines[0].equals("NAS-METADATA-2") ? 7 : 6)) throw new IOException("Invalid metadata row");
                 String path = decode(fields[0]);
                 String name = decode(fields[1]);
                 long size = Long.parseLong(fields[2]);
@@ -74,7 +122,8 @@ public class BackupMetadataBridge {
                     throw new IOException("Invalid or duplicate metadata path");
                 }
                 records.add(new Record(path, name, size, decode(fields[3]), decode(fields[4]),
-                        fields[5].isEmpty() ? null : LocalDateTime.parse(fields[5])));
+                        fields[5].isEmpty() ? null : LocalDateTime.parse(fields[5]),
+                        fields.length == 7 ? parseShares(fields[6]) : List.of()));
             }
         } catch (IllegalArgumentException e) {
             throw new IOException("Invalid metadata manifest", e);
@@ -153,6 +202,13 @@ public class BackupMetadataBridge {
 
     @Transactional(rollbackFor = Exception.class)
     public void restore(List<Record> records) {
+        restore(records, records.stream().map(Record::path)
+            .collect(java.util.stream.Collectors.toSet()));
+    }
+
+    @Transactional(rollbackFor = Exception.class)
+    public List<String> restore(List<Record> records, Set<String> recoveredPaths) {
+        List<String> warnings = new ArrayList<>();
         for (Record record : records) {
             if (metadata.findByStoragePath(record.path()).isPresent()) continue;
             FileMetadata item = new FileMetadata();
@@ -165,8 +221,29 @@ public class BackupMetadataBridge {
             String[] parts = record.path().split("/");
             long ownerId = Long.parseLong(parts[1]);
             item.setOwner(users.findById(ownerId).orElseThrow(() -> new IllegalStateException("Missing backup owner")));
-            metadata.save(item);
+            FileMetadata saved = metadata.save(item);
+            // Existing physical files retain their current sharing.
+            if (permissions != null && recoveredPaths.contains(record.path())) {
+                for (Share share : record.shares()) {
+                    var recipient = users.findByUsername(share.username());
+                    if (recipient.isEmpty()) {
+                        warnings.add("Skipped share for missing user: " + share.username()
+                            + " (" + record.name() + ")");
+                        continue;
+                    }
+                    if (recipient.get().getUserId().equals(item.getOwner().getUserId()))
+                        continue;
+                    var permission = new com.nas.webserver.model.FilePermission();
+                    permission.setFile(saved);
+                    permission.setUser(recipient.get());
+                    permission.setCanRead(share.read());
+                    permission.setCanWrite(share.write());
+                    permission.setCanEdit(share.edit());
+                    permissions.save(permission);
+                }
+            }
         }
         metadata.flush();
+        return warnings;
     }
 }

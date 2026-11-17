@@ -275,8 +275,17 @@ document.getElementById("confirmRestore")
                 throw new Error(await response.text());
             }
 
+            const result = await response.text();
             closeRestoreModal();
-            showToast("Backup restored successfully!");
+            showToast(result);
+            let summary = document.getElementById("restoreResult");
+            if (!summary) {
+                summary = document.createElement("p");
+                summary.id = "restoreResult";
+                summary.setAttribute("role", "status");
+                document.getElementById("backupList").closest("section").append(summary);
+            }
+            summary.textContent = result;
 
         } catch (error) {
             showToast(error.message, true);

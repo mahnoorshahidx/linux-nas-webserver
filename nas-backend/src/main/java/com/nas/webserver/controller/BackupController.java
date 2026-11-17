@@ -64,9 +64,7 @@ public class BackupController {
     public ResponseEntity<String> restoreBackup(
             @PathVariable String filename) throws IOException {
 
-        backupService.restoreBackup(filename);
-
-        return ResponseEntity.ok("Backup restored successfully");
+        return ResponseEntity.ok(backupService.restoreBackup(filename));
     }
 
     // Delete an existing backup
