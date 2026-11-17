@@ -6,7 +6,7 @@
     <title>Folders | NAS Server</title>
     <link rel="stylesheet" href="/css/style.css">
     <script src="/js/folders.js" defer></script>
-    <script src="/js/admin-navigation.js" defer></script>
+    <script src="/js/admin-navigation.js?v=2" defer></script>
 </head>
 <body>
 
@@ -25,19 +25,10 @@
         <p class="nav-label">WORKSPACE</p>
 
         <nav>
-            <a href="/files.html">
-                <span class="nav-icon">📄</span> My Files
-            </a>
-
-            <a href="/folders.html" class="active">
-                <span class="nav-icon">📁</span> Folders
-            </a>
-
-            <a href="/backups.html">
-                <span class="nav-icon">💾</span> Backup & Restore
-            </a>
-            <a href="/settings.html"><span class="nav-icon">⚙️</span> Settings</a>
-        </nav>
+<a href="/files.html"><span class="nav-icon" aria-hidden="true">📄</span> My Files</a>
+<a href="/folders.html" class="active" aria-current="page"><span class="nav-icon" aria-hidden="true">📁</span> Folders</a>
+<a href="/settings.html"><span class="nav-icon" aria-hidden="true">⚙️</span> Settings</a>
+</nav>
 
         <div class="sidebar-footer">
             <p>Personal Storage</p>
