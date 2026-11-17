@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Backup & Restore | NAS Server</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/backups-polish.css">
     <script src="/js/backups.js" defer></script>
     <script src="/js/admin-navigation.js?v=2" defer></script>
 </head>
@@ -37,7 +38,7 @@
     </aside>
 
     <!-- Main content -->
-    <main class="content">
+    <main class="content backup-page">
 
         <header class="page-header">
             <div>
@@ -54,7 +55,7 @@
         </header>
 
         <!-- Create backup -->
-        <section class="card">
+        <section class="card backup-panel backup-manual-panel">
             <div class="section-heading">
                 <h2>Create Backup</h2>
                 <p>Save a copy of your current files and folders.</p>
@@ -78,18 +79,22 @@
             </div>
         </section>
 
-        <section class="card">
-            <h2>Automatic Backups</h2>
-            <p>Runs on application startup, then after the configured delay
-            following each run. The application must remain running.
-            Status is recorded for the current application session.</p>
-            <p id="automaticBackupStatus" role="status">
-                Loading automatic backup status...
-            </p>
+        <section class="card backup-panel backup-auto-panel">
+            <div class="section-heading backup-heading-row">
+                <div>
+                    <h2>Automatic Backups</h2>
+                    <p>Scheduled backups run while the application is running.</p>
+                </div>
+                <span class="backup-section-icon" aria-hidden="true">↻</span>
+            </div>
+            <div id="automaticBackupStatus" class="backup-schedule-grid" role="status" aria-live="polite">
+                <p class="backup-muted">Loading automatic backup status...</p>
+            </div>
+            <p class="backup-footnote">Runs on startup and after each configured interval. Status reflects this application session.</p>
         </section>
 
         <!-- Existing backups -->
-        <section class="card">
+        <section class="card backup-panel">
             <div class="section-heading">
                 <h2>Available Backups</h2>
                 <p>View, restore, or delete saved backups.</p>
@@ -138,20 +143,26 @@
 
 
         <!-- System configuration backups are staged, never applied automatically. -->
-        <section class="card">
+        <section class="card backup-panel backup-config-panel">
             <div class="section-heading">
                 <h2>System Configuration Backup</h2>
-                <p>Back up approved Apache, HTTPS, UFW and application configuration files. Restores are staged for administrator review, not applied to the server.</p>
+                <p>Back up approved Apache, HTTPS, UFW, and application settings.</p>
             </div>
-            <button type="button" class="primary-btn" id="createConfigBackup">+ Back Up Configurations</button>
-            <button type="button" class="secondary-btn" id="refreshConfigBackups">Refresh Configurations</button>
-            <ul id="configBackupList" aria-label="Configuration backups"></ul>
-            <p id="configBackupStatus" role="status" aria-live="polite"></p>
-            <h3>Staged for administrator review</h3>
-            <p>Completed stages recorded by this version appear below.
-            Earlier staging folders remain on disk.
-            Staging never applies files to live settings.</p>
-            <ul id="configStageList"></ul>
+            <div class="backup-config-actions">
+                <button type="button" class="primary-btn" id="createConfigBackup">+ Back Up Configurations</button>
+                <button type="button" class="secondary-btn" id="refreshConfigBackups">↻ Refresh</button>
+            </div>
+            <div class="backup-notice"><span aria-hidden="true">ⓘ</span><span>Configuration restores are staged for administrator review. They are <strong>not automatically applied</strong> to the server.</span></div>
+            <div class="backup-subsection">
+                <h3>Configuration backups</h3>
+                <ul id="configBackupList" class="backup-config-list" aria-label="Configuration backups"></ul>
+                <p id="configBackupStatus" role="status" aria-live="polite"></p>
+            </div>
+            <div class="backup-subsection">
+                <h3>Staged restorations</h3>
+                <p class="backup-muted">Completed stages awaiting administrator review appear here. Older stages may remain on disk.</p>
+                <ul id="configStageList" class="backup-config-list"></ul>
+            </div>
         </section>
 
     </main>
