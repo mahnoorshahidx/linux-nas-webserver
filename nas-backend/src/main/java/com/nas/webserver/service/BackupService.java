@@ -150,7 +150,7 @@ public class BackupService {
     }
 
     // Non-destructive restore: existing identical files are preserved; conflicts abort.
-    public synchronized void restoreBackup(String filename) throws IOException {
+    public synchronized String restoreBackup(String filename) throws IOException {
         Path source = downloadBackup(filename);
         Path staging = Files.createTempDirectory(backupPath, ".restore-stage-");
         List<Path> createdFiles = new ArrayList<>();
@@ -252,7 +252,17 @@ public class BackupService {
                     }
                 }
             }
-            if (metadata != null) metadata.restore(records);
+            List<String> warnings = new ArrayList<>();
+            if (metadata != null) {
+                Set<String> recovered = new HashSet<>();
+                for (Path created : createdFiles)
+                    recovered.add(storagePath.relativize(created).toString().replace('\\', '/'));
+                warnings.addAll(metadata.restore(records, recovered));
+                if (manifest == null || manifest.startsWith("NAS-METADATA-1\n"))
+                    warnings.add("This older backup contains no sharing snapshot; old shares cannot be recovered.");
+            }
+            return "Backup restored successfully"
+                + (warnings.isEmpty() ? "" : ". " + String.join("; ", warnings));
         } catch (IOException | RuntimeException e) {
             for (int i = createdFiles.size() - 1; i >= 0; i--) {
                 try { Files.deleteIfExists(createdFiles.get(i)); } catch (IOException cleanup) { e.addSuppressed(cleanup); }
