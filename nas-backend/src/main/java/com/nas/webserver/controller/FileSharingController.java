@@ -30,29 +30,35 @@ public class FileSharingController {
         }
     }
     public record ShareRequest(@NotBlank String username, boolean canRead, boolean canWrite, boolean canEdit) {}
+    @org.springframework.security.access.prepost.PreAuthorize("@accountPermissionService.canRead(authentication)")
     @GetMapping("/files")
     public List<FileView> visible(Authentication auth) {
         var actor = sharing.currentUser(auth);
         return sharing.visible(actor).stream().map(f -> FileView.of(f, actor.getUserId())).toList();
     }
+    @org.springframework.security.access.prepost.PreAuthorize("@accountPermissionService.canRead(authentication)")
     @GetMapping("/files/{id}/access")
     public List<FilePermissionService.AccessEntry> access(@PathVariable Long id, Authentication auth) {
         return sharing.accessList(id, sharing.currentUser(auth));
     }
+    @org.springframework.security.access.prepost.PreAuthorize("@accountPermissionService.canRead(authentication)")
     @GetMapping("/files/{id}/lookup")
     public FilePermissionService.UserSummary lookup(@PathVariable Long id, @RequestParam String query, Authentication auth) {
         return sharing.lookupRecipient(id, sharing.currentUser(auth), query);
     }
+    @org.springframework.security.access.prepost.PreAuthorize("@accountPermissionService.canEdit(authentication)")
     @PutMapping("/files/{id}/permissions")
     public ResponseEntity<Void> grant(@PathVariable Long id, @Valid @RequestBody ShareRequest req, Authentication auth) {
         sharing.grant(id, sharing.currentUser(auth), req.username(), req.canRead(), req.canWrite(), req.canEdit());
         return ResponseEntity.noContent().build();
     }
+    @org.springframework.security.access.prepost.PreAuthorize("@accountPermissionService.canEdit(authentication)")
     @DeleteMapping("/files/{id}/permissions/{userId}")
     public ResponseEntity<Void> revoke(@PathVariable Long id, @PathVariable Long userId, Authentication auth) {
         sharing.revoke(id, sharing.currentUser(auth), userId);
         return ResponseEntity.noContent().build();
     }
+    @org.springframework.security.access.prepost.PreAuthorize("@accountPermissionService.canEdit(authentication)")
     @DeleteMapping("/files/{id}")
     public ResponseEntity<Void> deleteOwnedFile(@PathVariable Long id, Authentication auth) throws IOException {
         sharing.deleteOwnedFile(id, sharing.currentUser(auth), storage);
@@ -62,6 +68,7 @@ public class FileSharingController {
     public ResponseEntity<String> missingFile(java.nio.file.NoSuchFileException e) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("File missing");
     }
+    @org.springframework.security.access.prepost.PreAuthorize("@accountPermissionService.canRead(authentication)")
     @GetMapping("/files/{id}/download")
     public ResponseEntity<Resource> download(@PathVariable Long id, Authentication auth) throws IOException {
         FileMetadata file = sharing.requireReadable(id, sharing.currentUser(auth));

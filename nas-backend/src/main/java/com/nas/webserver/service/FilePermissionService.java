@@ -21,6 +21,15 @@ public class FilePermissionService {
         return users.findByUsername(authentication.getName()).orElseThrow(() -> new AccessDeniedException("Account missing"));
     }
     private boolean admin(User user) { return user.getRole() != null && "ADMIN".equalsIgnoreCase(user.getRole().getRoleName()); }
+    // Account permissions are hard limits: individual file shares cannot override them.
+    private void requireAccountRead(User actor) {
+        if (!admin(actor) && !actor.isCanRead())
+            throw new AccessDeniedException("Account READ permission required");
+    }
+    private void requireAccountEdit(User actor) {
+        if (!admin(actor) && !actor.isCanEdit())
+            throw new AccessDeniedException("Account EDIT permission required");
+    }
     private boolean owner(FileMetadata file, User user) { return file.getOwner() != null && Objects.equals(file.getOwner().getUserId(), user.getUserId()); }
     private FileMetadata file(Long id) { return files.findById(id).orElseThrow(() -> new NoSuchElementException("File not found")); }
     private void requireOwner(FileMetadata file, User actor) {
@@ -28,17 +37,20 @@ public class FilePermissionService {
     }
     @Transactional(readOnly = true)
     public boolean canRead(FileMetadata file, User actor) {
+        if (!admin(actor) && !actor.isCanRead()) return false;
         if (owner(file, actor) || admin(actor)) return true;
         return permissions.findByFile_IdAndUser_UserId(file.getId(), actor.getUserId())
             .map(p -> p.isCanRead() || p.isCanWrite() || p.isCanEdit()).orElse(false);
     }
     @Transactional(readOnly = true)
     public boolean canWrite(FileMetadata file, User actor) {
+        if (!admin(actor) && !actor.isCanWrite()) return false;
         if (owner(file, actor) || admin(actor)) return true;
         return permissions.findByFile_IdAndUser_UserId(file.getId(), actor.getUserId()).map(FilePermission::isCanWrite).orElse(false);
     }
     @Transactional(readOnly = true)
     public boolean canEdit(FileMetadata file, User actor) {
+        if (!admin(actor) && !actor.isCanEdit()) return false;
         if (owner(file, actor) || admin(actor)) return true;
         return permissions.findByFile_IdAndUser_UserId(file.getId(), actor.getUserId()).map(FilePermission::isCanEdit).orElse(false);
     }
@@ -55,6 +67,7 @@ public class FilePermissionService {
                               boolean canRead, boolean canWrite, boolean canEdit) {}
     @Transactional(readOnly = true)
     public UserSummary lookupRecipient(Long fileId, User actor, String query) {
+        requireAccountRead(actor);
         requireOwner(file(fileId), actor);
         String value = query == null ? "" : query.trim();
         if (value.isEmpty()) throw new IllegalArgumentException("Enter a username or email");
@@ -65,6 +78,7 @@ public class FilePermissionService {
     }
     @Transactional(readOnly = true)
     public List<AccessEntry> accessList(Long fileId, User actor) {
+        requireAccountRead(actor);
         FileMetadata file = file(fileId);
         requireOwner(file, actor);
         List<AccessEntry> result = new ArrayList<>();
@@ -82,6 +96,7 @@ public class FilePermissionService {
     }
     @Transactional
     public void grant(Long fileId, User actor, String recipientUsername, boolean read, boolean write, boolean edit) {
+        requireAccountEdit(actor);
         FileMetadata file = file(fileId);
         requireOwner(file, actor);
         User recipient = users.findByUsername(recipientUsername)
@@ -98,11 +113,13 @@ public class FilePermissionService {
     }
     @Transactional
     public void revoke(Long fileId, User actor, Long recipientId) {
+        requireAccountEdit(actor);
         requireOwner(file(fileId), actor);
         permissions.findByFile_IdAndUser_UserId(fileId, recipientId).ifPresent(permissions::delete);
     }
     @Transactional
     public void deleteOwnedFile(Long fileId, User actor, UserStorageService storage) throws java.io.IOException {
+        requireAccountEdit(actor);
         FileMetadata target = file(fileId);
         requireOwner(target, actor);
         // Resolve only account-scoped keys. An old metadata row may point to a
@@ -119,6 +136,7 @@ public class FilePermissionService {
 
     @Transactional(readOnly = true)
     public List<FileMetadata> visible(User actor) {
+        requireAccountRead(actor);
         if (admin(actor)) return files.findAll();
         Map<Long, FileMetadata> result = new LinkedHashMap<>();
         for (FileMetadata file : files.findByOwner_UserId(actor.getUserId())) result.put(file.getId(), file);
