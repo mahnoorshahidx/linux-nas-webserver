@@ -1,3 +1,24 @@
+
+async function fetchWithCsrf(url, options = {}) {
+    const method = (options.method || "GET").toUpperCase();
+
+    if (!["GET", "HEAD", "OPTIONS"].includes(method)) {
+        const response = await fetch("/api/csrf", { cache: "no-store" });
+
+        if (!response.ok) {
+            throw new Error("Please sign in again and retry.");
+        }
+
+        const csrf = await response.json();
+        const headers = new Headers(options.headers);
+        headers.set(csrf.headerName, csrf.token);
+        options = { ...options, headers };
+    }
+
+    return fetch(url, options);
+}
+
+// Page elements
 const fileList = document.getElementById("fileList");
 const uploadForm = document.getElementById("uploadForm");
 const fileInput = document.getElementById("fileInput");
@@ -5,6 +26,9 @@ const uploadZone = document.getElementById("uploadZone");
 const selectedFile = document.getElementById("selectedFile");
 const toast = document.getElementById("toast");
 const deleteModal = document.getElementById("deleteModal");
+const selectAllFiles = document.getElementById("selectAllFiles");
+const selectedCount = document.getElementById("selectedCount");
+const deleteSelectedButton = document.getElementById("deleteSelectedButton");
 
 let pendingDelete = null;
 let chosenFile = null;
@@ -33,7 +57,7 @@ fileInput.addEventListener("change", () => {
     updateSelectedFile(fileInput.files[0] || null);
 });
 
-// Drag and drop
+// Drag and drop files
 uploadZone.addEventListener("dragover", event => {
     event.preventDefault();
     uploadZone.classList.add("drag-over");
@@ -70,7 +94,7 @@ uploadForm.addEventListener("submit", async event => {
     data.append("file", chosenFile);
 
     try {
-        const response = await fetch("/api/files/upload", {
+        const response = await fetchWithCsrf("/api/files/upload", {
             method: "POST",
             body: data
         });
@@ -84,21 +108,69 @@ uploadForm.addEventListener("submit", async event => {
 
         await loadFiles();
         showToast("File uploaded successfully!");
-
     } catch (error) {
         showToast(error.message, true);
     }
+});
+
+// Get selected filenames
+function getSelectedFiles() {
+    return Array.from(
+        fileList.querySelectorAll(".file-checkbox:checked")
+    ).map(checkbox => checkbox.value);
+}
+
+// Update checkbox selection
+function updateSelection() {
+    const checkboxes = Array.from(
+        fileList.querySelectorAll(".file-checkbox")
+    );
+
+    const selected = getSelectedFiles();
+    const count = selected.length;
+
+    selectedCount.textContent =
+        count + (count === 1 ? " file selected" : " files selected");
+
+    deleteSelectedButton.disabled = count === 0;
+
+    selectAllFiles.checked =
+        checkboxes.length > 0 && count === checkboxes.length;
+
+    selectAllFiles.indeterminate =
+        count > 0 && count < checkboxes.length;
+}
+
+// Select or deselect all files
+selectAllFiles.addEventListener("change", () => {
+    const checkboxes = fileList.querySelectorAll(".file-checkbox");
+
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAllFiles.checked;
+    });
+
+    updateSelection();
 });
 
 // Load stored files
 async function loadFiles() {
     fileList.replaceChildren();
 
-    try {
-        const response = await fetch("/api/files");
+    selectAllFiles.checked = false;
+    selectAllFiles.indeterminate = false;
+    updateSelection();
 
+    try {
+        const response = await fetchWithCsrf("/api/files");
+
+        if (response.status === 403) {
+            const cell = fileList.insertRow().insertCell();
+            cell.colSpan = 3;
+            cell.textContent = "Your account cannot list personal files. Shared files, if permitted, are listed below.";
+            return;
+        }
         if (!response.ok) {
-            throw new Error("Unable to load files.");
+            throw new Error("Unable to load personal files (HTTP " + response.status + ").");
         }
 
         const files = await response.json();
@@ -106,7 +178,8 @@ async function loadFiles() {
         if (files.length === 0) {
             const row = fileList.insertRow();
             const cell = row.insertCell();
-            cell.colSpan = 2;
+
+            cell.colSpan = 3;
             cell.textContent = "No files uploaded yet.";
             return;
         }
@@ -114,7 +187,22 @@ async function loadFiles() {
         files.forEach(filename => {
             const row = fileList.insertRow();
 
+            // First column: checkbox
+            const checkboxCell = row.insertCell();
+            checkboxCell.className = "checkbox-column";
+
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.className = "file-checkbox";
+            checkbox.value = filename;
+            checkbox.setAttribute("aria-label", "Select " + filename);
+
+            checkbox.addEventListener("change", updateSelection);
+            checkboxCell.append(checkbox);
+
+            // Second column: filename
             const nameCell = row.insertCell();
+
             const nameWrapper = document.createElement("div");
             nameWrapper.className = "file-name";
 
@@ -128,11 +216,15 @@ async function loadFiles() {
             nameWrapper.append(icon, name);
             nameCell.append(nameWrapper);
 
+            // Third column: actions
             const actionCell = row.insertCell();
+
             const actions = document.createElement("div");
             actions.className = "action-buttons";
 
+            // Download button
             const download = document.createElement("button");
+            download.type = "button";
             download.className = "secondary-btn";
             download.textContent = "Download";
 
@@ -142,7 +234,9 @@ async function loadFiles() {
                     encodeURIComponent(filename);
             });
 
+            // Delete button
             const remove = document.createElement("button");
+            remove.type = "button";
             remove.className = "secondary-btn";
             remove.textContent = "Delete";
 
@@ -154,56 +248,97 @@ async function loadFiles() {
             actionCell.append(actions);
         });
 
+        updateSelection();
+
     } catch (error) {
         showToast(error.message, true);
     }
 }
 
-// Open delete confirmation
-function openDeleteModal(filename) {
-    pendingDelete = filename;
+// Open delete confirmation modal
+function openDeleteModal(filenames) {
+    pendingDelete = Array.isArray(filenames)
+        ? [...filenames]
+        : [filenames];
 
-    document.getElementById("deleteMessage").textContent =
-        'Are you sure you want to delete "' + filename + '"?';
+    const message = document.getElementById("deleteMessage");
+    const title = document.getElementById("modalTitle");
+
+    if (pendingDelete.length === 1) {
+        title.textContent = "Delete File?";
+        message.textContent =
+            'Are you sure you want to delete "' +
+            pendingDelete[0] + '"?';
+    } else {
+        title.textContent = "Delete Files?";
+        message.textContent =
+            "Are you sure you want to delete " +
+            pendingDelete.length + " selected files?";
+    }
 
     deleteModal.hidden = false;
     document.getElementById("cancelDelete").focus();
 }
 
-// Close delete confirmation
+// Close delete confirmation modal
 function closeDeleteModal() {
     deleteModal.hidden = true;
     pendingDelete = null;
 }
 
+// Cancel deletion
 document.getElementById("cancelDelete")
     .addEventListener("click", closeDeleteModal);
 
-// Confirm file deletion
+// Confirm deletion
 document.getElementById("confirmDelete")
     .addEventListener("click", async () => {
-        if (!pendingDelete) return;
+        if (!pendingDelete || pendingDelete.length === 0) {
+            return;
+        }
 
-        const filename = pendingDelete;
+        const filenames = [...pendingDelete];
 
         try {
-            const response = await fetch(
-                "/api/files/" + encodeURIComponent(filename),
-                { method: "DELETE" }
-            );
+            // Delete selected files using existing DELETE endpoint
+            for (const filename of filenames) {
+                const response = await fetchWithCsrf(
+                    "/api/files/" + encodeURIComponent(filename),
+                    { method: "DELETE" }
+                );
 
-            if (!response.ok) {
-                throw new Error(await response.text());
+                if (!response.ok) {
+                    throw new Error(
+                        'Unable to delete "' + filename + '": ' +
+                        await response.text()
+                    );
+                }
             }
 
             closeDeleteModal();
             await loadFiles();
-            showToast("File deleted successfully!");
+
+            showToast(
+                filenames.length === 1
+                    ? "File deleted successfully!"
+                    : "Selected files deleted successfully!"
+            );
 
         } catch (error) {
+            closeDeleteModal();
+            await loadFiles();
             showToast(error.message, true);
         }
     });
+
+// Delete selected files
+deleteSelectedButton.addEventListener("click", () => {
+    const selected = getSelectedFiles();
+
+    if (selected.length > 0) {
+        openDeleteModal(selected);
+    }
+});
 
 // Close modal with Escape
 document.addEventListener("keydown", event => {
@@ -214,6 +349,10 @@ document.addEventListener("keydown", event => {
 
 // Refresh file list
 document.getElementById("refreshButton")
-    .addEventListener("click", loadFiles);
+    .addEventListener("click", () => {
+        loadFiles();
+        document.dispatchEvent(new Event("nas:refresh-sharing"));
+    });
 
+// Load files when page opens
 loadFiles();

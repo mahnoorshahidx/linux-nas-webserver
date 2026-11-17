@@ -592,3 +592,113 @@ input[type="checkbox"] {
     border-color: var(--primary);
     background: var(--primary-light);
 }
+
+/* Public landing and registration pages */
+.auth-page {
+    min-height: 100vh;
+    display: grid;
+    place-items: center;
+    padding: 28px 16px;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 440px;
+    padding: 36px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    box-shadow: 0 5px 25px rgba(90, 65, 120, 0.05);
+}
+
+.auth-brand {
+    margin-bottom: 32px;
+}
+
+.auth-card h1 {
+    margin: 8px 0 10px;
+    font-size: 28px;
+}
+
+.auth-description {
+    margin: 0 0 26px;
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.auth-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.auth-button {
+    width: 100%;
+    text-align: center;
+    text-decoration: none;
+    padding: 13px 18px;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.auth-form label {
+    margin-top: 8px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.auth-form input {
+    width: 100%;
+    padding: 12px 13px;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: #FCFAFF;
+    color: var(--text);
+    font: inherit;
+}
+
+.auth-form input:focus {
+    outline: 2px solid #D9C7EC;
+    border-color: var(--primary);
+}
+
+.auth-form button:disabled {
+    opacity: 0.65;
+    cursor: wait;
+}
+
+.auth-message {
+    min-height: 20px;
+    margin: 5px 0;
+    font-size: 13px;
+}
+
+.auth-message.error { color: #B5475B; }
+.auth-message.success { color: #347A54; }
+
+.auth-footer {
+    margin: 18px 0 0;
+    color: var(--muted);
+    text-align: center;
+    font-size: 13px;
+}
+
+.auth-footer a {
+    color: var(--primary-dark);
+    font-weight: bold;
+    text-decoration: none;
+}
+
+.auth-footer a:hover { text-decoration: underline; }
+
+@media (max-width: 480px) {
+    .auth-card { padding: 26px 22px; }
+}
+
+/* Settings page: extends the original NAS lavender theme */
+.settings-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}.settings-grid>.card{margin:0;min-width:0}.settings-grid form{display:flex;flex-direction:column;gap:14px}.settings-grid form label{font-weight:600;font-size:14px;display:flex;flex-direction:column;gap:7px}.settings-grid input:not([type=checkbox]),.settings-grid select{width:100%;padding:12px;border:1px solid var(--border);border-radius:9px;font:inherit;color:var(--text);background:white}.settings-grid input:focus{outline:2px solid var(--primary)}.settings-grid form button{align-self:flex-start}.settings-wide{grid-column:1/-1}.settings-stats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-bottom:16px}.settings-stats div{background:var(--primary-light);padding:15px;border-radius:10px;color:var(--muted);font-size:13px}.settings-stats strong{display:block;color:var(--text);font-size:20px;margin-top:6px}.settings-note{font-size:12px;color:var(--muted);margin-top:16px}.settings-message{font-size:13px;margin-top:12px}.settings-toggle{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:17px 0;border-bottom:1px solid var(--border)}.settings-toggle input{accent-color:var(--primary);width:18px;height:18px}.settings-wide table{width:100%;border-collapse:collapse}.settings-wide th,.settings-wide td{padding:12px;border-bottom:1px solid var(--border);text-align:left}.settings-wide td button{margin-left:8px}.nas-compact .settings-grid{gap:12px}.nas-compact .settings-grid>.card{padding:20px}@media(max-width:900px){.settings-grid{grid-template-columns:1fr}.settings-wide{grid-column:auto}}

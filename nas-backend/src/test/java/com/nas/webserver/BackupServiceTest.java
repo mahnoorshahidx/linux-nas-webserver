@@ -142,15 +142,13 @@ class BackupServiceTest {
                         "backup-00000000-0000-0000-0000-000000000000.zip"));
     }
 
-    // Test preventing overwrite during restore
+    // Unrelated existing files are preserved during a non-destructive restore.
     @Test
     void testRestoreNonEmptyStorage() throws IOException {
         String backup = backupService.createBackup();
-
         Files.writeString(storagePath.resolve("existing.txt"), "Data");
-
-        assertThrows(FileAlreadyExistsException.class,
-                () -> backupService.restoreBackup(backup));
+        backupService.restoreBackup(backup);
+        assertEquals("Data", Files.readString(storagePath.resolve("existing.txt")));
     }
 
     // Test deleting a missing backup

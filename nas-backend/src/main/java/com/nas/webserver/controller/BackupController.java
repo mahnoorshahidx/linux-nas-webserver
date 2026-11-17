@@ -100,7 +100,7 @@ public class BackupController {
     public ResponseEntity<String> handleExistingFiles(Exception e) {
 
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body("Storage must be empty before restoring");
+                .body("Restore conflict: an existing file or folder differs from the backup");
     }
 
     // Handle other backup errors

@@ -5,22 +5,19 @@ import java.nio.file.*;
 import java.util.List;
 import java.util.stream.Stream;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 public class FolderService {
 
-    private final Path storagePath;
+    private final UserStorageService userStorage;
 
-    public FolderService(@Value("${nas.storage.path}") String storage)
-            throws IOException {
-        storagePath = Paths.get(storage).toAbsolutePath().normalize();
-        Files.createDirectories(storagePath);
+    public FolderService(UserStorageService userStorage) {
+        this.userStorage = userStorage;
     }
 
     // Validate folder names and keep folders inside storage
-    private Path resolveFolder(String name) {
+    private Path resolveFolder(String name) throws IOException {
         if (name == null || name.isBlank()
                 || name.equals(".") || name.equals("..")
                 || name.contains("/") || name.contains("\\")
@@ -28,9 +25,9 @@ public class FolderService {
             throw new IllegalArgumentException("Invalid folder name");
         }
 
-        Path folder = storagePath.resolve(name).normalize();
+        Path folder = userStorage.root().resolve(name).normalize();
 
-        if (!folder.getParent().equals(storagePath)) {
+        if (!folder.getParent().equals(userStorage.root())) {
             throw new IllegalArgumentException("Invalid folder path");
         }
 
@@ -45,7 +42,7 @@ public class FolderService {
 
     // List stored folders
     public List<String> listFolders() throws IOException {
-        try (Stream<Path> folders = Files.list(storagePath)) {
+        try (Stream<Path> folders = Files.list(userStorage.root())) {
             return folders
                     .filter(path -> Files.isDirectory(
                             path, LinkOption.NOFOLLOW_LINKS))

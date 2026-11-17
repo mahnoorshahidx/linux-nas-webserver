@@ -26,9 +26,17 @@ class FileControllerTest {
 
     private MockMvc mockMvc;
 
+    private com.nas.webserver.service.UserStorageService testStorage()
+            throws java.io.IOException {
+        var storage = org.mockito.Mockito.mock(
+                com.nas.webserver.service.UserStorageService.class);
+        org.mockito.Mockito.when(storage.root()).thenReturn(tempDir);
+        return storage;
+    }
+
     @BeforeEach
     void setUp() throws Exception {
-        FileService fileService = new FileService(tempDir.toString());
+        FileService fileService = new FileService(testStorage());
 
         mockMvc = MockMvcBuilders.standaloneSetup(
                 new FileController(fileService)).build();
@@ -113,4 +121,54 @@ class FileControllerTest {
         mockMvc.perform(multipart("/api/files/upload").file(file))
                 .andExpect(status().isBadRequest());
     }
+
+    // Verify the real controller invokes database metadata integration.
+    @Test
+    void testUploadRecordsMetadata() throws Exception {
+        var storage = testStorage();
+        var metadata = org.mockito.Mockito.mock(
+                com.nas.webserver.service.FileMetadataService.class);
+        var controller = new FileController(new FileService(storage), metadata);
+        var mvc = MockMvcBuilders.standaloneSetup(controller).build();
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "metadata-test.txt", "text/plain", "Hello".getBytes());
+
+        mvc.perform(multipart("/api/files/upload").file(file))
+                .andExpect(status().isCreated());
+        org.mockito.Mockito.verify(metadata).recordUpload(
+                org.mockito.ArgumentMatchers.any(org.springframework.web.multipart.MultipartFile.class),
+                org.mockito.ArgumentMatchers.isNull());
+    }
+
+    @Test
+    void testDeleteRemovesMetadata() throws Exception {
+        Files.writeString(tempDir.resolve("metadata-test.txt"), "Hello");
+        var metadata = org.mockito.Mockito.mock(
+                com.nas.webserver.service.FileMetadataService.class);
+        var mvc = MockMvcBuilders.standaloneSetup(
+                new FileController(new FileService(testStorage()), metadata)).build();
+
+        mvc.perform(delete("/api/files/metadata-test.txt"))
+                .andExpect(status().isOk());
+        org.mockito.Mockito.verify(metadata).remove("metadata-test.txt", null);
+    }
+
+    @Test
+    void testUploadMetadataFailureRollsBackFile() throws Exception {
+        var metadata = org.mockito.Mockito.mock(
+                com.nas.webserver.service.FileMetadataService.class);
+        org.mockito.Mockito.doThrow(new java.io.IOException("Database metadata failed"))
+                .when(metadata).recordUpload(
+                        org.mockito.ArgumentMatchers.any(org.springframework.web.multipart.MultipartFile.class),
+                        org.mockito.ArgumentMatchers.isNull());
+        var mvc = MockMvcBuilders.standaloneSetup(
+                new FileController(new FileService(testStorage()), metadata)).build();
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "failed.txt", "text/plain", "Hello".getBytes());
+
+        mvc.perform(multipart("/api/files/upload").file(file))
+                .andExpect(status().isInternalServerError());
+        assertFalse(Files.exists(tempDir.resolve("failed.txt")));
+    }
+
 }

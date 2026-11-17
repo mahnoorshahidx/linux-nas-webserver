@@ -5,7 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Files | NAS Server</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/sharing.css">
     <script src="/js/files.js" defer></script>
+    <script src="/js/sharing.js" defer></script>
+    <script src="/js/admin-navigation.js" defer></script>
 </head>
 <body>
 
@@ -33,6 +36,7 @@
             <a href="/backups.html">
                 <span class="nav-icon">💾</span> Backup & Restore
             </a>
+            <a href="/settings.html"><span class="nav-icon">⚙️</span> Settings</a>
         </nav>
 
         <div class="sidebar-footer">
@@ -136,6 +140,33 @@
             </div>
         </section>
 
+
+        <section class="card" aria-labelledby="sharingHeading">
+            <div class="section-heading"><h2 id="sharingHeading">My Files &amp; Shared With Me</h2></div>
+            <p>Files are private until you share them with a registered user.</p>
+            <p id="sharingMessage" role="status"></p>
+            <div style="overflow-x:auto"><table><thead><tr><th>Filename</th><th>Owner</th><th>Access</th><th>Actions</th></tr></thead><tbody id="sharingList"></tbody></table></div>
+        </section>
+        <section id="sharePanel" class="share-panel card" hidden aria-labelledby="sharePanelTitle">
+            <div class="share-panel-heading">
+                <div><p class="share-eyebrow">FILE SHARING</p><h2 id="sharePanelTitle">Share file</h2><p id="shareFilename"></p></div>
+                <button type="button" class="secondary-btn" id="closeSharePanel">Close</button>
+            </div>
+            <div class="share-add-box">
+                <label for="shareUserQuery">Add someone by username or email</label>
+                <div class="share-search-row"><input id="shareUserQuery" type="text" autocomplete="off" placeholder="Enter username or email" maxlength="100"><button type="button" id="shareLookupButton" class="secondary-btn">Find user</button></div>
+                <p id="shareLookupStatus" role="status" aria-live="polite"></p>
+                <div id="shareNewUser" hidden>
+                    <p id="shareNewUserName"></p>
+                    <div id="shareNewPermissions" class="share-permission-row" aria-label="New user permissions"></div>
+                    <button type="button" id="shareAddButton">Add access</button>
+                </div>
+            </div>
+            <h3>People with access</h3>
+            <p class="share-help">Select multiple permissions. Changes are saved when you press Save.</p>
+            <div id="shareAccessList" class="share-access-list"></div>
+            <p id="sharePanelStatus" role="status" aria-live="polite"></p>
+        </section>
     </main>
 </div>
 

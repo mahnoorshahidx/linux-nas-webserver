@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NAS - Login</title>
+    <link rel="stylesheet" href="/css/style.css">
+
+    <style>
+        body {
+            min-height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #FAF8FD;
+            color: #40364F;
+            font-family: Arial, sans-serif;
+        }
+
+        .login-card {
+            width: 90%;
+            max-width: 390px;
+            padding: 36px;
+            box-sizing: border-box;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(64, 54, 79, 0.10);
+        }
+
+        .login-card h1 {
+            margin: 0 0 8px;
+            text-align: center;
+            color: #8060B1;
+        }
+
+        .subtitle {
+            margin-bottom: 28px;
+            text-align: center;
+            color: #8B8298;
+        }
+
+        .login-card label {
+            display: block;
+            margin: 16px 0 7px;
+            font-weight: 600;
+        }
+
+        .login-card input {
+            width: 100%;
+            padding: 12px;
+            box-sizing: border-box;
+            border: 1px solid #ddd5e8;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+
+        .login-card input:focus {
+            outline: 2px solid #9879C6;
+            border-color: #9879C6;
+        }
+
+        .login-card button {
+            width: 100%;
+            margin-top: 24px;
+            padding: 13px;
+            border: none;
+            border-radius: 8px;
+            background: #9879C6;
+            color: white;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .login-card button:hover {
+            background: #8060B1;
+        }
+
+        .message {
+            margin-top: 16px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .error { color: #c0392b; }
+        .success { color: #27834a; }
+
+        .register-link {
+            margin-top: 24px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .register-link a {
+            color: #8060B1;
+            font-weight: bold;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+    <main class="login-card">
+        <h1>NAS Login</h1>
+        <p class="subtitle">Sign in to access your storage</p>
+
+        <form id="loginForm" method="post" action="/login" autocomplete="off">
+            <label for="username">Username</label>
+            <input
+                type="text"
+                id="username"
+                name="username"
+                placeholder="Enter your username"
+                autocomplete="off"
+                required
+                autofocus
+            >
+            <label for="password">Password</label>
+            <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Enter your password"
+                autocomplete="off"
+                required
+            >
+
+            <button type="submit">Sign In</button>
+        </form>
+
+        <div id="message" class="message">
+            <span id="loginError" class="error" hidden>
+                Invalid username or password.
+            </span>
+            <span id="logoutMessage" class="success" hidden>
+                You have successfully logged out.
+            </span>
+        </div>
+
+        <p class="register-link">
+            Don't have an account?
+            <a href="/register.html">Create an account</a>
+        </p>
+    </main>
+
+    <script>
+        // Clear restored form state on each fresh visit (Firefox back/forward cache too).
+        window.addEventListener("pageshow", () => {
+            document.getElementById("loginForm").reset();
+            document.getElementById("username").readOnly = false;
+            document.getElementById("username").disabled = false;
+        });
+        const params = new URLSearchParams(window.location.search);
+
+        if (params.has("error")) {
+            document.getElementById("loginError").hidden = false;
+        }
+
+        if (params.has("logout")) {
+            document.getElementById("logoutMessage").hidden = false;
+        }
+
+        document.getElementById("loginForm").addEventListener(
+           "submit",
+            async function(event) {
+                event.preventDefault();
+
+                const form = event.currentTarget;
+                const button = form.querySelector("button");
+
+                button.disabled = true;
+                button.textContent = "Signing in...";
+
+                try {
+                    const response = await fetch("/api/csrf", {
+                        credentials: "same-origin"
+                    });
+
+                    if (!response.ok) {
+                        throw new Error("Could not obtain security token.");
+                    }
+
+                    const csrf = await response.json();
+
+                    let csrfInput = form.querySelector(
+                        'input[name="' + csrf.parameterName + '"]'
+                    );
+
+                    if (!csrfInput) {
+                        csrfInput = document.createElement("input");
+                        csrfInput.type = "hidden";
+                        csrfInput.name = csrf.parameterName;
+                        form.appendChild(csrfInput);
+                    }
+
+                    csrfInput.value = csrf.token;
+                    form.submit();
+
+                } catch (error) {
+                    document.getElementById("message").textContent =
+                        "Unable to connect. Please refresh and try again.";
+
+                    button.disabled = false;
+                    button.textContent = "Sign In";
+                }
+            }
+        );
+    </script>
+</body>
+</html>

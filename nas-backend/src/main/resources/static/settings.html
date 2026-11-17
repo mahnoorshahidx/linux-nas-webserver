@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Settings | NAS Server</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <script src="/js/settings.js" defer></script>
+    <script src="/js/admin-navigation.js" defer></script>
+</head>
+
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="brand-icon">✦</div>
+                <div>
+                    <h2>NAS Server</h2><span>Cloud Storage</span>
+                </div>
+            </div>
+            <p class="nav-label">WORKSPACE</p>
+            <nav><a href="/files.html"><span class="nav-icon">📄</span> My Files</a><a href="/folders.html"><span
+                        class="nav-icon">📁</span> Folders</a><a href="/backups.html"><span class="nav-icon">💾</span>
+                    Backup &amp; Restore</a><a href="/settings.html" class="active"><span class="nav-icon">⚙️</span>
+                    Settings</a></nav>
+            <div class="sidebar-footer">
+                <p>Personal Storage</p><span>Manage your files securely</span>
+            </div>
+        </aside>
+        <main class="content">
+            <header class="page-header">
+                <div>
+                    <p class="eyebrow">MY WORKSPACE</p>
+                    <h1>Settings</h1>
+                    <p>Manage your account and NAS preferences.</p>
+                </div><button class="secondary-btn" id="logout" type="button">Log Out</button>
+            </header>
+            <div class="settings-grid">
+                <section class="card">
+                    <div class="section-heading">
+                        <h2>Account</h2>
+                        <p>Edit your username and email.</p>
+                    </div>
+                    <form id="profile"><label>Username<input name="username" minlength="3" maxlength="50"
+                                required></label><label>Email<input name="email" type="email" maxlength="100"
+                                required></label><button class="primary-btn">Save changes</button></form>
+                    <p class="settings-message" id="profileStatus" role="status"></p>
+                    <p class="settings-note" id="accountInfo"></p>
+                </section>
+                <section class="card">
+                    <div class="section-heading">
+                        <h2>Security</h2>
+                        <p>Change your password securely.</p>
+                    </div>
+                    <form id="password"><label>Current password<input name="currentPassword" type="password"
+                                autocomplete="current-password" required></label><label>New password<input
+                                name="newPassword" type="password" minlength="8" maxlength="72"
+                                autocomplete="new-password" required></label><label>Confirm new password<input
+                                name="confirmPassword" type="password" minlength="8" maxlength="72"
+                                autocomplete="new-password" required></label><button class="primary-btn">Change
+                            password</button></form>
+                    <p class="settings-message" id="passwordStatus" role="status"></p>
+                </section>
+                <section class="card">
+                    <div class="section-heading">
+                        <h2>Storage</h2>
+                        <p>Read-only overview of NAS storage.</p>
+                    </div>
+                    <div class="settings-stats">
+                        <div>Files<strong id="files">—</strong></div>
+                        <div>Folders<strong id="folders">—</strong></div>
+                        <div>Stored data<strong id="used">—</strong></div>
+                        <div>Disk capacity<strong id="capacity">—</strong></div>
+                    </div>
+                    <p class="settings-note">Disk capacity refers to the filesystem containing NAS storage, not a
+                        personal quota.</p><button class="secondary-btn" type="button"
+                        id="refreshStorage">Refresh</button>
+                    <p id="storageStatus" role="status"></p>
+                </section>
+                <section class="card">
+                    <div class="section-heading">
+                        <h2>Preferences</h2>
+                        <p>Saved locally in this browser.</p>
+                    </div><label class="settings-toggle">Compact layout <input type="checkbox"
+                            id="compact"></label><label class="settings-toggle">Confirm before leaving unsaved account
+                        changes <input type="checkbox" id="confirm"></label>
+                    <p class="settings-note">Preferences apply in this browser. Account and password changes are saved
+                        in MySQL.</p>
+                </section>
+                <section class="card settings-wide" id="adminSection" hidden>
+                    <div class="section-heading">
+                        <h2>User Management</h2>
+                        <p>Admin only: review accounts, change roles, or remove accounts.</p>
+                    </div>
+                    <div class="table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="users"></tbody>
+                        </table>
+                    </div>
+                    <p class="settings-message" id="adminStatus" role="status"></p>
+                </section>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>

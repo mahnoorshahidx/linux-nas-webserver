@@ -1,0 +1,113 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Access Denied | NAS Server</title>
+    <link rel="stylesheet" href="/css/style.css">
+
+    <style>
+        .access-denied-card {
+            max-width: 650px;
+            margin: 80px auto;
+            padding: 50px 35px;
+            text-align: center;
+        }
+
+        .access-denied-icon {
+            font-size: 55px;
+            margin-bottom: 20px;
+        }
+
+        .access-denied-card h2 {
+            margin-bottom: 15px;
+        }
+
+        .access-denied-card p {
+            color: #8b8198;
+            line-height: 1.7;
+            margin-bottom: 30px;
+        }
+
+        .access-denied-card .primary-btn {
+            display: inline-block;
+            text-decoration: none;
+        }
+    </style>
+</head>
+
+<body>
+<div class="layout">
+
+    <!-- Sidebar -->
+    <aside class="sidebar">
+        <div class="brand">
+            <div class="brand-icon">✦</div>
+            <div>
+                <h2>NAS Server</h2>
+                <span>Cloud Storage</span>
+            </div>
+        </div>
+
+        <p class="nav-label">WORKSPACE</p>
+
+        <nav>
+            <a href="/files.html">
+                <span class="nav-icon">📄</span> My Files
+            </a>
+
+            <a href="/folders.html">
+                <span class="nav-icon">📁</span> Folders
+            </a>
+
+            <a href="/backups.html">
+                <span class="nav-icon">💾</span> Backup & Restore
+            </a>
+
+            <a href="/settings.html">
+                <span class="nav-icon">⚙️</span> Settings
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <p>Personal Storage</p>
+            <span>Manage your files securely</span>
+        </div>
+    </aside>
+
+    <!-- Main content -->
+    <main class="content">
+
+        <header class="page-header">
+            <div>
+                <p class="eyebrow">MY WORKSPACE</p>
+                <h1>Access Restricted</h1>
+                <p>Administrator permissions are required.</p>
+            </div>
+        </header>
+
+        <!-- Access denied message -->
+        <section class="card access-denied-card">
+
+            <div class="access-denied-icon">🔒</div>
+
+            <h2>Administrator Access Required</h2>
+
+            <p>
+                This page is only available to
+                administrators.
+                Please contact your system administrator
+                if you need access to this feature.
+            </p>
+
+            <a href="/files.html" class="primary-btn">
+                ← Back to My Files
+            </a>
+
+        </section>
+
+    </main>
+</div>
+</body>
+</html>
