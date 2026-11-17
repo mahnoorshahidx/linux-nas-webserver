@@ -27,3 +27,7 @@
 
 .share-delete-confirm { display:flex; align-items:center; flex-wrap:wrap; gap:8px; margin-top:8px; padding:10px; border:1px solid #d5b2b2; border-radius:8px; }
 .share-delete-confirm span { font-size:0.9rem; }
+
+/* Match the shared-file Download link to the other action buttons. */
+.share-download { display: inline-block; text-decoration: none; }
+.share-download:hover, .share-download:focus-visible { text-decoration: none; }

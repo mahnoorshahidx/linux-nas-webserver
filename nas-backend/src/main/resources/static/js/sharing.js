@@ -207,6 +207,7 @@
             const download = document.createElement('a');
             download.href = `/api/sharing/files/${encodeURIComponent(file.id)}/download`;
             download.textContent = 'Download';
+            download.className = 'secondary-btn share-download';
             cell.append(download);
             if (file.mine) {
                 const share = document.createElement('button');

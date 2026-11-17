@@ -1,0 +1,38 @@
+/* Backup & Restore page only. Other pages keep their existing styling. */
+.backup-page { max-width: 1440px; }
+.backup-page .page-header { margin-bottom: 28px; }
+.backup-page .card.backup-panel { padding: 28px 32px; margin-bottom: 20px; border-radius: 20px; box-shadow: 0 8px 28px rgba(82,57,112,.035); }
+.backup-page .backup-panel .section-heading { margin-bottom: 22px; }
+.backup-page .backup-panel h2 { font-size: 21px; letter-spacing: -.35px; }
+.backup-page .backup-panel h3 { font-size: 15px; margin: 0 0 7px; }
+.backup-page .backup-manual-panel .backup-create { background: #faf8fd; border: 1px solid #eee8f5; padding: 20px; border-radius: 14px; }
+.backup-page .backup-manual-panel .backup-info h3 { font-size: 16px; }
+.backup-page .backup-manual-panel .backup-icon { width: 50px; height: 50px; }
+.backup-page .backup-heading-row { display: flex; justify-content: space-between; align-items: flex-start; }
+.backup-page .backup-section-icon { display: grid; place-items: center; background: #f1eaf9; color: #8968ba; border-radius: 13px; width: 42px; height: 42px; font-size: 23px; }
+.backup-page .backup-schedule-grid { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 12px; }
+.backup-page .backup-stat { padding: 17px 18px; border: 1px solid #eee8f5; background: #fbf9fe; border-radius: 13px; min-width: 0; }
+.backup-page .backup-stat-label { color: #877a97; font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+.backup-page .backup-stat-value { color: #463a56; font-size: 14px; font-weight: 700; overflow-wrap: anywhere; line-height: 1.5; }
+.backup-page .backup-stat .backup-state { display: inline-flex; align-items: center; padding: 4px 11px; border-radius: 999px; background: #eee5f8; color: #7555a6; font-size: 13px; }
+.backup-page .backup-footnote { color: #8b8298; font-size: 12px; line-height: 1.5; margin: 15px 0 0; }
+.backup-page .backup-schedule-error { grid-column: 1/-1; padding: 15px; border-radius: 10px; background: #fff5f6; color: #ad5264; }
+.backup-page .backup-panel .bulk-toolbar { margin-bottom: 15px; }
+.backup-page .backup-panel .table-container { border: 1px solid #eee8f5; border-radius: 12px; overflow-x: auto; }
+.backup-page .backup-panel table th { background: #faf8fd; }
+.backup-page .backup-config-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 18px; }
+.backup-page .backup-notice { display: flex; align-items: flex-start; gap: 12px; padding: 15px 17px; background: #f7f2fc; border: 1px solid #e9def5; border-radius: 12px; color: #665579; font-size: 13px; line-height: 1.6; }
+.backup-page .backup-notice > span:first-child { font-size: 18px; color: #8867b7; }
+.backup-page .backup-subsection { margin-top: 24px; }
+.backup-page .backup-subsection + .backup-subsection { padding-top: 22px; border-top: 1px solid #eee8f5; }
+.backup-page .backup-subsection h3 { font-size: 16px; margin-bottom: 10px; }
+.backup-page .backup-muted { color: #8b8298; font-size: 13px; line-height: 1.6; margin: 0 0 12px; }
+.backup-page .backup-config-list { list-style: none; margin: 0; padding: 0; color: #857992; font-size: 14px; }
+.backup-page .backup-config-list:empty { display: none; }
+.backup-page .backup-config-list > li { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 13px 16px; margin-top: 8px; border: 1px solid #eee8f5; background: #fbf9fe; border-radius: 11px; overflow-wrap: anywhere; color: #493d5a; }
+.backup-page #configBackupList:not(:has(li)), .backup-page #configStageList:not(:has(li)) { background: #faf8fd; border: 1px dashed #e7ddef; padding: 18px; border-radius: 12px; }
+.backup-page #configBackupStatus:empty { display: none; }
+.backup-page #configBackupStatus:not(:empty) { color: #72579b; background: #f7f2fc; border-radius: 10px; padding: 12px 14px; font-size: 13px; overflow-wrap: anywhere; }
+.backup-page button:disabled { opacity: .55; cursor: not-allowed; }
+@media(max-width:1000px) { .backup-page .backup-schedule-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media(max-width:650px) { .backup-page .card.backup-panel { padding: 20px; } .backup-page .backup-schedule-grid { grid-template-columns: 1fr; } .backup-page .backup-manual-panel .backup-create { flex-direction: column; align-items: stretch; gap: 18px; } .backup-page .backup-manual-panel .backup-create button { width: 100%; } }
