@@ -260,5 +260,9 @@
             }
         }
     }
+    document.addEventListener('nas:refresh-sharing', () => {
+        refresh().catch(e =>
+            setMessage(status, "Unable to load shared files: " + e.message, true));
+    });
     try { await refresh(); } catch (e) { status.textContent = e.message; }
 })();

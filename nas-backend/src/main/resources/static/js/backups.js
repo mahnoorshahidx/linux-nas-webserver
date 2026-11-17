@@ -240,7 +240,7 @@ function openRestoreModal(filename) {
 
     document.getElementById("restoreMessage").textContent =
         'Restore "' + filename +
-        '"? Your file and folder storage must be empty first.';
+        '"? Missing files will be restored. Identical existing files are preserved; conflicting files stop the restore. Nothing is overwritten or deleted.';
 
     restoreModal.hidden = false;
     document.getElementById("cancelRestore").focus();

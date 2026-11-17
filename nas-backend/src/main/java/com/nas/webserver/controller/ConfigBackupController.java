@@ -22,6 +22,11 @@ public class ConfigBackupController {
     @GetMapping
     public List<String> list() throws IOException { return service.list(); }
 
+    @GetMapping("/staged")
+    public List<ConfigBackupService.StagedRestore> staged() throws IOException {
+        return service.staged();
+    }
+
     @PostMapping("/{filename}/stage")
     public String stage(@PathVariable String filename) throws IOException {
         return "Configuration files staged for Linux administrator review: " + service.stage(filename);

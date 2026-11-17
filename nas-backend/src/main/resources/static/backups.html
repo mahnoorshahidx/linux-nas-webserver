@@ -87,6 +87,16 @@
             </div>
         </section>
 
+        <section class="card">
+            <h2>Automatic Backups</h2>
+            <p>Runs on application startup, then after the configured delay
+            following each run. The application must remain running.
+            Status is recorded for the current application session.</p>
+            <p id="automaticBackupStatus" role="status">
+                Loading automatic backup status...
+            </p>
+        </section>
+
         <!-- Existing backups -->
         <section class="card">
             <div class="section-heading">
@@ -145,7 +155,12 @@
             <button type="button" class="primary-btn" id="createConfigBackup">+ Back Up Configurations</button>
             <button type="button" class="secondary-btn" id="refreshConfigBackups">Refresh Configurations</button>
             <ul id="configBackupList" aria-label="Configuration backups"></ul>
-            <p id="configBackupStatus" role="status"></p>
+            <p id="configBackupStatus" role="status" aria-live="polite"></p>
+            <h3>Staged for administrator review</h3>
+            <p>Completed stages recorded by this version appear below.
+            Earlier staging folders remain on disk.
+            Staging never applies files to live settings.</p>
+            <ul id="configStageList"></ul>
         </section>
 
     </main>
@@ -216,6 +231,7 @@
     </div>
 </div>
 
-<script src="/js/config-backups.js" defer></script>
+<script src="/js/config-backups.js?v=2" defer></script>
+<script src="/js/backup-schedule.js?v=1" defer></script>
 </body>
 </html>

@@ -163,8 +163,14 @@ async function loadFiles() {
     try {
         const response = await fetchWithCsrf("/api/files");
 
+        if (response.status === 403) {
+            const cell = fileList.insertRow().insertCell();
+            cell.colSpan = 3;
+            cell.textContent = "Your account cannot list personal files. Shared files, if permitted, are listed below.";
+            return;
+        }
         if (!response.ok) {
-            throw new Error("Unable to load files.");
+            throw new Error("Unable to load personal files (HTTP " + response.status + ").");
         }
 
         const files = await response.json();
@@ -343,7 +349,10 @@ document.addEventListener("keydown", event => {
 
 // Refresh file list
 document.getElementById("refreshButton")
-    .addEventListener("click", loadFiles);
+    .addEventListener("click", () => {
+        loadFiles();
+        document.dispatchEvent(new Event("nas:refresh-sharing"));
+    });
 
 // Load files when page opens
 loadFiles();

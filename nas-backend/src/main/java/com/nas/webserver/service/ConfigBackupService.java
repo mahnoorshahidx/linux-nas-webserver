@@ -98,6 +98,27 @@ public class ConfigBackupService {
         }
     }
 
+    public record StagedRestore(String id, String backup,
+                                java.time.Instant completedAt) {}
+
+    public synchronized List<StagedRestore> staged() throws IOException {
+        List<StagedRestore> result = new ArrayList<>();
+        try (Stream<Path> paths = Files.list(stageDir)) {
+            for (Path p : paths.sorted().toList()) {
+                if (!p.getFileName().toString().matches("restore-[a-f0-9-]{36}")
+                        || !Files.isDirectory(p, LinkOption.NOFOLLOW_LINKS)) continue;
+                Path marker = p.resolve(".stage-source");
+                if (!Files.isRegularFile(marker, LinkOption.NOFOLLOW_LINKS)
+                        || Files.size(marker) > 100) continue;
+                String backup = Files.readString(marker);
+                if (!backup.matches("config-[a-f0-9-]{36}\\.zip")) continue;
+                result.add(new StagedRestore(p.getFileName().toString(),
+                    backup, Files.getLastModifiedTime(marker).toInstant()));
+            }
+        }
+        return result;
+    }
+
     /** Extract only to a fresh staging directory for review by Linux administrator. */
     public synchronized String stage(String name) throws IOException {
         Path file = archive(name);
@@ -135,6 +156,8 @@ public class ConfigBackupService {
                     }
                 }
             }
+            Files.writeString(target.resolve(".stage-source"), name,
+                StandardOpenOption.CREATE_NEW);
         } catch (IOException | RuntimeException ex) {
             try (Stream<Path> paths = Files.walk(target)) {
                 for (Path p : paths.sorted(Comparator.reverseOrder()).toList()) Files.deleteIfExists(p);
